@@ -1,6 +1,10 @@
 import six
+import os
 from collections import Mapping
 
+this_dir = os.path.realpath(os.path.dirname(__file__))
+
+RESOURCES_DIR = os.path.join(this_dir, os.pardir, 'resources')
 
 def recursive_merge(a, b):
     for k, v in six.iteritems(b):

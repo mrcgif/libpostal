@@ -14,6 +14,7 @@ sys.path.append(os.path.realpath(os.path.join(os.pardir, os.pardir)))
 
 from geodata.address_formatting.formatter import AddressFormatter
 from geodata.coordinates.conversion import latlon_to_decimal
+from geodata.configs.utils import RESOURCES_DIR
 from geodata.encoding import safe_decode
 from geodata.file_utils import ensure_dir, download_file
 from geodata.i18n.unicode_properties import get_chars_by_script
@@ -136,8 +137,7 @@ class ClickThatHoodReverseGeocoder(GeohashPolygonIndex):
     # Contains accurate boundaries for neighborhoods sans weird GeoPlanet names like "Adelphi" or "Crown Heights South"
     NEIGHBORHOODS_REPO = 'https://github.com/codeforamerica/click_that_hood'
 
-    config_path = os.path.join(this_dir, os.pardir, os.pardir, os.pardir,
-                               'resources', 'neighborhoods', 'click_that_hood.yaml')
+    config_path = os.path.join(RESOURCES_DIR, 'neighborhoods', 'click_that_hood.yaml')
 
     config = yaml.load(open(config_path))
 

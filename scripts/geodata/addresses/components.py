@@ -17,7 +17,6 @@ import pymorphy2_dicts_uk
 from collections import defaultdict, OrderedDict
 
 from geodata.address_formatting.formatter import AddressFormatter
-
 from geodata.address_expansions.abbreviations import abbreviate
 from geodata.address_expansions.equivalence import equivalent
 from geodata.address_expansions.gazetteers import *
@@ -33,7 +32,7 @@ from geodata.addresses.postcodes import PostCode
 from geodata.addresses.staircases import Staircase
 from geodata.addresses.units import Unit
 from geodata.boundaries.names import boundary_names
-from geodata.configs.utils import nested_get, recursive_merge
+from geodata.configs.utils import nested_get, recursive_merge, RESOURCES_DIR
 from geodata.coordinates.conversion import latlon_to_decimal
 from geodata.countries.constants import Countries
 from geodata.countries.names import *
@@ -53,11 +52,7 @@ from geodata.text.normalize import *
 from geodata.text.tokenize import tokenize, token_types
 from geodata.text.utils import is_numeric
 
-
-this_dir = os.path.realpath(os.path.dirname(__file__))
-
-PARSER_DEFAULT_CONFIG = os.path.join(this_dir, os.pardir, os.pardir, os.pardir,
-                                     'resources', 'parser', 'default.yaml')
+PARSER_DEFAULT_CONFIG = os.path.join(RESOURCES_DIR, 'parser', 'default.yaml')
 
 JAPANESE_ROMAJI = 'ja_rm'
 ENGLISH = 'en'

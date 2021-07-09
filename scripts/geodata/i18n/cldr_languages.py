@@ -8,11 +8,12 @@ from collections import Counter
 from cStringIO import StringIO
 from lxml import etree
 
+
+
+from geodata.configs.utils import RESOURCES_DIR
 from unicode_paths import CLDR_DIR
 
-this_dir = os.path.realpath(os.path.dirname(__file__))
-DEFAULT_LANGUAGES_DIR = os.path.join(this_dir, os.pardir, os.pardir, os.pardir,
-                                     'resources', 'language', 'countries')
+DEFAULT_LANGUAGES_DIR = os.path.join(RESOURCES_DIR, 'language', 'countries')
 
 CLDR_SUPPLEMENTAL_DATA = os.path.join(CLDR_DIR, 'common', 'supplemental',
                                       'supplementalData.xml')

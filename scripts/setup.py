@@ -2,7 +2,7 @@ import os
 
 from setuptools import setup, Extension, find_packages
 
-RESOURCES_DIR = 'resources'
+RESOURCES_DIR = os.path.join('geodata', 'resources')
 
 
 def main():
@@ -37,11 +37,11 @@ def main():
         },
         include_package_data=True,
         zip_safe=False,
-        url='http://mapzen.com',
+        url='http://github.com/openvenues/libpostal',
         description='Utilities for working with geographic data',
         license='MIT License',
-        maintainer='mapzen.com',
-        maintainer_email='pelias@mapzen.com'
+        maintainer='Al Barrentine',
+        maintainer_email='libpostal@gmail.com'
     )
 
 if __name__ == '__main__':

@@ -4,8 +4,9 @@ import yaml
 
 this_dir = os.path.realpath(os.path.dirname(__file__))
 
-OPENADDRESSES_PARSER_DATA_CONFIG = os.path.join(this_dir, os.pardir, os.pardir, os.pardir,
-                                                'resources', 'parser', 'data_sets', 'openaddresses.yaml')
+from geodata.configs.utils import RESOURCES_DIR
+
+OPENADDRESSES_PARSER_DATA_CONFIG = os.path.join(RESOURCES_DIR, 'parser', 'data_sets', 'openaddresses.yaml')
 
 
 class OpenAddressesConfig(object):

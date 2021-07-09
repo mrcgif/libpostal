@@ -4,8 +4,8 @@ import sys
 this_dir = os.path.realpath(os.path.dirname(__file__))
 sys.path.append(os.path.realpath(os.path.join(os.pardir, os.pardir)))
 
-DATA_DIR = os.path.join(this_dir, os.pardir, os.pardir, os.pardir, 'resources')
+from geodata.configs.utils import RESOURCES_DIR
 
-UNICODE_DATA_DIR = os.path.join(DATA_DIR, 'unicode')
+UNICODE_DATA_DIR = os.path.join(RESOURCES_DIR, 'unicode')
 
 CLDR_DIR = os.path.join(UNICODE_DATA_DIR, 'cldr')
