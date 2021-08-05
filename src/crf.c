@@ -1,5 +1,6 @@
 #include "crf.h"
 #include "log/log.h"
+#include "address_parser.h"
 
 #define CRF_SIGNATURE 0xCFCFCFCF
 
@@ -38,22 +39,27 @@ bool crf_tagger_score(crf_t *self, void *tagger, void *tagger_context, cstring_a
         uint32_t fidx;
         char *feature;
 
-        if (print_features) {
-            printf("{ ");
+        if (print_features = true) {
             size_t num_features = cstring_array_num_strings(features);
+            char_array *feature_str = char_array_new();
             cstring_array_foreach(features, fidx, feature, {
-                printf("%s", feature);
-                if (fidx < num_features - 1) printf(", ");
+                char_array_append(feature_str, feature);
+                if (fidx < num_features - 1) char_array_append(feature_str, ", ");
+
             })
             size_t num_prev_tag_features = cstring_array_num_strings(prev_tag_features);
             if (num_prev_tag_features > 0) {
-                printf(", ");
+                char_array_append(feature_str, ", ");
             }
             cstring_array_foreach(prev_tag_features, fidx, feature, {
-                printf("prev tag+%s", feature);
-                if (fidx < num_prev_tag_features - 1) printf(", ");
+                char_array *temp_feat_str = char_array_from_string("prev tag+");
+                char_array_append(temp_feat_str, feature);
+                char_array_append(feature_str, char_array_get_string(temp_feat_str));
+                char_array_destroy(temp_feat_str);
+                if (fidx < num_prev_tag_features - 1) char_array_append(feature_str, ", ");
             })
-            printf(" }\n");
+            log_info("found feature set { %s } for token \"%s\"", char_array_get_string(feature_str), cstring_array_get_string(((address_parser_context_t *)tagger_context)->normalized, t));
+            char_array_destroy(feature_str);
         }
 
         uint32_t feature_id;

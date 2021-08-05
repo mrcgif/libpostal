@@ -1098,7 +1098,7 @@ int linenoiseHistorySetMaxLen(int len) {
 /* Save the history in the specified file. On success 0 is returned
  * otherwise -1 is returned. */
 int linenoiseHistorySave(const char *filename) {
-    FILE *fp = fopen(filename,"w");
+    FILE *fp = fopen(filename,"a");
     int j;
 
     if (fp == NULL) return -1;

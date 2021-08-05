@@ -116,7 +116,7 @@ language_classifier_minibatch_t *language_classifier_minibatch_new(void) {
     return minibatch;
 }
 
-inline bool language_classifier_language_is_valid(char *language) {
+bool language_classifier_language_is_valid(char *language) {
     return !string_equals(language, AMBIGUOUS_LANGUAGE) && !string_equals(language, UNKNOWN_LANGUAGE);
 }
 

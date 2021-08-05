@@ -34,6 +34,9 @@ int main(int argc, char **argv) {
 
     char *input = NULL;
 
+    linenoiseHistoryLoad(history_file);
+    linenoiseHistorySetMaxLen(100);
+
     while((input = linenoise("> ")) != NULL) {
 
         if (input[0] != '\0') {

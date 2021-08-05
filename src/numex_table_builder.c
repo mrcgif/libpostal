@@ -40,7 +40,7 @@ int main(int argc, char **argv) {
     size_t num_source_rules = sizeof(numex_rules) / sizeof(numex_rule_t);
 
     if (num_source_keys != num_source_rules) {
-        log_error("num_sourcE_keys != num_source_rules, aborting\n");
+        log_error("num_source_keys != num_source_rules, aborting\n");
         numex_module_teardown();
         exit(1);
     }
