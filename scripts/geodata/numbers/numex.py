@@ -1,6 +1,5 @@
 import os
 import sys
-
 import yaml
 
 this_dir = os.path.realpath(os.path.dirname(__file__))

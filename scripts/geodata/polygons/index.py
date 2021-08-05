@@ -4,6 +4,7 @@ import geohash
 import os
 import rtree
 import six
+import sys
 import ujson as json
 
 from collections import OrderedDict, defaultdict
@@ -12,6 +13,9 @@ from lru import LRU
 from shapely.geometry import Point, Polygon, MultiPolygon
 from shapely.prepared import prep
 from shapely.geometry.geo import mapping
+
+this_dir = os.path.realpath(os.path.dirname(__file__))
+sys.path.append(os.path.realpath(os.path.join(this_dir, os.pardir, os.pardir)))
 
 from geodata.polygons.area import polygon_bounding_box_area
 

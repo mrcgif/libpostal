@@ -5,7 +5,7 @@ import sys
 from collections import defaultdict, OrderedDict
 
 this_dir = os.path.realpath(os.path.dirname(__file__))
-sys.path.append(os.path.realpath(os.path.join(os.pardir, os.pardir)))
+sys.path.append(os.path.realpath(os.path.join(this_dir, os.pardir, os.pardir)))
 
 sys.path.append(os.path.realpath(os.path.join(os.pardir, os.pardir, os.pardir, 'python')))
 

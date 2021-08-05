@@ -2,9 +2,13 @@
 import copy
 import os
 import six
+import sys
 import yaml
 
 from collections import Mapping
+
+this_dir = os.path.realpath(os.path.dirname(__file__))
+sys.path.append(os.path.realpath(os.path.join(this_dir, os.pardir, os.pardir)))
 
 from geodata.address_expansions.address_dictionaries import address_phrase_dictionaries
 from geodata.configs.utils import nested_get, DoesNotExist, recursive_merge, alternative_probabilities, RESOURCES_DIR

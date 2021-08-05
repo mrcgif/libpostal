@@ -40,7 +40,7 @@ from collections import defaultdict, OrderedDict
 from lxml import etree
 
 this_dir = os.path.realpath(os.path.dirname(__file__))
-sys.path.append(os.path.realpath(os.path.join(os.pardir, os.pardir)))
+sys.path.append(os.path.realpath(os.path.join(this_dir, os.pardir, os.pardir)))
 
 from geodata.csv_utils import *
 from geodata.file_utils import *

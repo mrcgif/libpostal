@@ -1,3 +1,9 @@
+import os
+import sys
+
+this_dir = os.path.realpath(os.path.dirname(__file__))
+sys.path.append(os.path.realpath(os.path.join(this_dir, os.pardir, os.pardir)))
+
 from geodata.text.normalize import *
 from geodata.names.similarity import soft_tfidf_similarity, jaccard_similarity
 

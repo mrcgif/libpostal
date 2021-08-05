@@ -1,7 +1,12 @@
+import os
 import random
 import six
+import sys
 
 from collections import namedtuple
+
+this_dir = os.path.realpath(os.path.dirname(__file__))
+sys.path.append(os.path.realpath(os.path.join(this_dir, os.pardir, os.pardir)))
 
 from geodata.addresses.config import address_config
 from geodata.address_expansions.gazetteers import chains_gazetteer

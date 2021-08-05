@@ -1,13 +1,17 @@
 import collections
 import os
 import six
+import sys
 import yaml
 
 from copy import deepcopy
 
-from geodata.address_formatting.formatter import AddressFormatter
-from geodata.configs.utils import recursive_merge, DoesNotExist, RESOURCES_DIR
+this_dir = os.path.realpath(os.path.dirname(__file__))
+sys.path.append(os.path.realpath(os.path.join(this_dir, os.pardir, os.pardir)))
+
 from geodata.encoding import safe_encode
+from geodata.configs.utils import recursive_merge, DoesNotExist, RESOURCES_DIR
+from geodata.address_formatting.formatter import AddressFormatter
 
 OSM_BOUNDARIES_DIR = os.path.join(RESOURCES_DIR, 'boundaries', 'osm')
 

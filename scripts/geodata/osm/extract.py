@@ -7,13 +7,15 @@ from .osm XML files.
 '''
 
 import re
+import os
 import six
-import urllib
-import HTMLParser
+import sys
 
 from collections import OrderedDict
 from lxml import etree
 
+this_dir = os.path.realpath(os.path.dirname(__file__))
+sys.path.append(os.path.realpath(os.path.join(this_dir, os.pardir, os.pardir)))
 
 from geodata.csv_utils import unicode_csv_reader
 from geodata.text.normalize import normalize_string, NORMALIZE_STRING_DECOMPOSE, NORMALIZE_STRING_LATIN_ASCII

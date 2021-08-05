@@ -1,4 +1,10 @@
+import os
 import re
+import sys
+
+this_dir = os.path.realpath(os.path.dirname(__file__))
+sys.path.append(os.path.realpath(os.path.join(this_dir, os.pardir, os.pardir)))
+
 from geodata.i18n.google import google_i18n
 from geodata.postal_codes.config import postal_codes_config
 

@@ -3,7 +3,11 @@ import gevent.pool
 
 import os
 import six
+import sys
 import ujson as json
+
+this_dir = os.path.realpath(os.path.dirname(__file__))
+sys.path.append(os.path.realpath(os.path.join(this_dir, os.pardir, os.pardir)))
 
 from geodata.whosonfirst.client import WhosOnFirst
 from geodata.encoding import safe_encode

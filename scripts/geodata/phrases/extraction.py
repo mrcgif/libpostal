@@ -1,8 +1,12 @@
 import csv
+import os
 import six
+import sys
 
 from collections import defaultdict, Counter
-from itertools import izip, islice
+
+this_dir = os.path.realpath(os.path.dirname(__file__))
+sys.path.append(os.path.realpath(os.path.join(this_dir, os.pardir, os.pardir)))
 
 from geodata.text.tokenize import tokenize, token_types
 from geodata.encoding import safe_encode

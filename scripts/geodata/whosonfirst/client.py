@@ -1,7 +1,11 @@
 import boto3
 import os
 import six
+import sys
 import ujson as json
+
+this_dir = os.path.realpath(os.path.dirname(__file__))
+sys.path.append(os.path.realpath(os.path.join(this_dir, os.pardir, os.pardir)))
 
 from geodata.encoding import safe_encode
 from geodata.file_utils import ensure_dir

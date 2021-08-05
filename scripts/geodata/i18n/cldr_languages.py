@@ -2,13 +2,15 @@ import argparse
 import csv
 import os
 import requests
+import sys
 
 from collections import Counter
 
 from cStringIO import StringIO
 from lxml import etree
 
-
+this_dir = os.path.realpath(os.path.dirname(__file__))
+sys.path.append(os.path.realpath(os.path.join(this_dir, os.pardir, os.pardir)))
 
 from geodata.configs.utils import RESOURCES_DIR
 from unicode_paths import CLDR_DIR

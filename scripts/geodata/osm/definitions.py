@@ -1,12 +1,14 @@
 import os
 import re
 import six
+import sys
 
 from collections import defaultdict
 
-from geodata.graph.topsort import topsort
-
 this_dir = os.path.realpath(os.path.dirname(__file__))
+sys.path.append(os.path.realpath(os.path.join(this_dir, os.pardir, os.pardir)))
+
+from geodata.graph.topsort import topsort
 
 DEFAULT_SCRIPT_PATH = os.path.join(this_dir, 'fetch_osm_address_data.sh')
 

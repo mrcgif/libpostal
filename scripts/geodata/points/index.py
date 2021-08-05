@@ -4,11 +4,15 @@ import os
 import math
 import operator
 import six
+import sys
 import ujson as json
 
 from collections import defaultdict, OrderedDict
 
 from leveldb import LevelDB
+
+this_dir = os.path.realpath(os.path.dirname(__file__))
+sys.path.append(os.path.realpath(os.path.join(this_dir, os.pardir, os.pardir)))
 
 from geodata.distance.haversine import haversine_distance
 

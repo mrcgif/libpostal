@@ -7,6 +7,7 @@ import yaml
 from collections import defaultdict
 
 this_dir = os.path.realpath(os.path.dirname(__file__))
+sys.path.append(os.path.realpath(os.path.join(this_dir, os.pardir, os.pardir)))
 
 from geodata.configs.utils import nested_get, DoesNotExist, RESOURCES_DIR
 from geodata.encoding import safe_decode

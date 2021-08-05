@@ -1,7 +1,11 @@
 import os
 import six
+import sys
 
 from collections import defaultdict, OrderedDict
+
+this_dir = os.path.realpath(os.path.dirname(__file__))
+sys.path.append(os.path.realpath(os.path.join(this_dir, os.pardir, os.pardir)))
 
 from geodata.address_expansions.address_dictionaries import address_phrase_dictionaries
 from geodata.encoding import safe_decode, safe_encode

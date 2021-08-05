@@ -12,7 +12,7 @@ import sys
 from collections import defaultdict, namedtuple
 
 this_dir = os.path.realpath(os.path.dirname(__file__))
-sys.path.append(os.path.realpath(os.path.join(os.pardir, os.pardir)))
+sys.path.append(os.path.realpath(os.path.join(this_dir, os.pardir, os.pardir)))
 
 from geodata.file_utils import download_file
 from geodata.string_utils import wide_unichr, wide_ord

@@ -7,6 +7,7 @@ import pycountry
 import random
 import re
 import six
+import sys
 import yaml
 
 # Russian/Ukrainian parsing and inflection
@@ -15,6 +16,9 @@ import pymorphy2_dicts_ru
 import pymorphy2_dicts_uk
 
 from collections import defaultdict, OrderedDict
+
+this_dir = os.path.realpath(os.path.dirname(__file__))
+sys.path.append(os.path.realpath(os.path.join(this_dir, os.pardir, os.pardir)))
 
 from geodata.address_formatting.formatter import AddressFormatter
 from geodata.address_expansions.abbreviations import abbreviate

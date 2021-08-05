@@ -10,6 +10,9 @@ import yaml
 from collections import defaultdict
 from marisa_trie import BytesTrie
 
+this_dir = os.path.realpath(os.path.dirname(__file__))
+sys.path.append(os.path.realpath(os.path.join(this_dir, os.pardir, os.pardir)))
+
 from geodata.text.phrases import PhraseFilter
 from geodata.encoding import safe_encode, safe_decode
 from geodata.i18n.unicode_paths import DATA_DIR

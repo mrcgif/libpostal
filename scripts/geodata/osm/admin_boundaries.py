@@ -7,11 +7,16 @@ Generates polygons from OpenStreetMap relations
 
 import array
 import logging
+import os
 import six
+import sys
 
 from bisect import bisect_left
 from collections import defaultdict, OrderedDict
 from itertools import izip, combinations
+
+this_dir = os.path.realpath(os.path.dirname(__file__))
+sys.path.append(os.path.realpath(os.path.join(this_dir, os.pardir, os.pardir)))
 
 from geodata.coordinates.conversion import latlon_to_decimal
 from geodata.encoding import safe_encode, safe_decode

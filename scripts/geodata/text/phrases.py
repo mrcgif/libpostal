@@ -1,7 +1,13 @@
 import six
+import os
+import sys
 
 from collections import *
 from marisa_trie import BytesTrie
+
+this_dir = os.path.realpath(os.path.dirname(__file__))
+sys.path.append(os.path.realpath(os.path.join(this_dir, os.pardir, os.pardir)))
+
 from geodata.encoding import safe_encode, safe_decode
 
 SENTINEL = None

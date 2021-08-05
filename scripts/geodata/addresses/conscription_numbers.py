@@ -1,4 +1,9 @@
+import os
 import random
+import sys
+
+this_dir = os.path.realpath(os.path.dirname(__file__))
+sys.path.append(os.path.realpath(os.path.join(this_dir, os.pardir, os.pardir)))
 
 from geodata.addresses.config import address_config
 from geodata.addresses.numbering import NumberedComponent

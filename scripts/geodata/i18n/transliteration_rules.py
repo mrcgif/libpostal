@@ -31,6 +31,10 @@ from scanner import Scanner
 from unicode_data import *
 from unicode_properties import *
 from unicode_paths import CLDR_DIR
+
+this_dir = os.path.realpath(os.path.dirname(__file__))
+sys.path.append(os.path.realpath(os.path.join(this_dir, os.pardir, os.pardir)))
+
 from geodata.encoding import safe_decode, safe_encode
 from geodata.string_utils import NUM_CODEPOINTS, wide_unichr, wide_ord
 

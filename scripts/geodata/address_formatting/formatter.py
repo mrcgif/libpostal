@@ -5,11 +5,14 @@ import pystache
 import random
 import re
 import six
+import sys
 import subprocess
 import yaml
 
 from collections import OrderedDict, defaultdict
-from itertools import ifilter
+
+this_dir = os.path.realpath(os.path.dirname(__file__))
+sys.path.append(os.path.realpath(os.path.join(this_dir, os.pardir, os.pardir)))
 
 from geodata.address_formatting.aliases import Aliases
 from geodata.configs.utils import nested_get, recursive_merge, RESOURCES_DIR

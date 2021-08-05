@@ -1,6 +1,11 @@
+import os
 import re
+import sys
 import six
 import unittest
+
+this_dir = os.path.realpath(os.path.dirname(__file__))
+sys.path.append(os.path.realpath(os.path.join(this_dir, os.pardir, os.pardir)))
 
 from geodata.addresses.entrances import *
 from geodata.addresses.floors import *

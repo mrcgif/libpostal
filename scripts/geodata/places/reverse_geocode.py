@@ -5,7 +5,7 @@ import sys
 import six
 
 this_dir = os.path.realpath(os.path.dirname(__file__))
-sys.path.append(os.path.realpath(os.path.join(os.pardir, os.pardir)))
+sys.path.append(os.path.realpath(os.path.join(this_dir, os.pardir, os.pardir)))
 
 from geodata.address_expansions.abbreviations import abbreviate
 from geodata.coordinates.conversion import latlon_to_decimal
