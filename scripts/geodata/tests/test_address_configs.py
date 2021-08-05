@@ -39,65 +39,65 @@ class TestAddressConfigs(unittest.TestCase):
             self.assertTrue(isclose(total_prob, 1.0), six.u('language: {}, country: {}, component: {}'.format(language, country, component)))
 
     def check_entrance_phrases(self, language, country=None):
-        for i in xrange(1000):
+        for i in range(1000):
             phrase = Entrance.phrase(Entrance.random(language, country=country), language, country=country)
             self.assertTrue(self.valid_phrase(phrase), six.u('phrase was: {}').format(phrase))
 
     def check_staircase_phrases(self, language, country=None):
-        for i in xrange(1000):
+        for i in range(1000):
             phrase = Entrance.phrase(Entrance.random(language, country=country), language, country=country)
             self.assertTrue(self.valid_phrase(phrase), six.u('phrase was: {}').format(phrase))
 
     def check_floor_phrases(self, language, country=None):
-        for i in xrange(10000):
+        for i in range(10000):
             phrase = Floor.phrase(Floor.random(language, country=country), language, country=country)
             self.assertTrue(self.valid_phrase(phrase), six.u('phrase was: {}').format(phrase))
-        for i in xrange(1000):
+        for i in range(1000):
             phrase = Floor.phrase(None, language, country=country)
             self.assertTrue(self.valid_phrase(phrase), six.u('phrase was: {}').format(phrase))
-        for i in xrange(1000):
+        for i in range(1000):
             phrase = Floor.phrase(None, language, country=country, num_floors=3)
             self.assertTrue(self.valid_phrase(phrase), six.u('phrase was: {}').format(phrase))
 
     def check_unit_phrases(self, language, country=None):
-        for i in xrange(10000):
+        for i in range(10000):
             phrase = Unit.phrase(Unit.random(language, country=country), language, country=country)
             self.assertTrue(self.valid_phrase(phrase), six.u('phrase was: {}').format(phrase))
-        for i in xrange(1000):
+        for i in range(1000):
             phrase = Unit.phrase(None, language, country=country)
             self.assertTrue(self.valid_phrase(phrase), six.u('phrase was: {}').format(phrase))
-        for i in xrange(1000):
+        for i in range(1000):
             phrase = Unit.phrase(Unit.random(language, country=country, num_floors=3, num_basements=1), language, country=country)
             self.assertTrue(self.valid_phrase(phrase), six.u('phrase was: {}').format(phrase))
 
         for zone in ('commercial', 'industrial', 'university'):
-            for i in xrange(1000):
+            for i in range(1000):
                 phrase = Unit.phrase(Unit.random(language, country=country), language, country=country, zone=zone)
                 self.assertTrue(self.valid_phrase(phrase), six.u('phrase was: {}').format(phrase))
 
     def check_po_boxes(self, language, country=None):
-        for i in xrange(1000):
+        for i in range(1000):
             phrase = POBox.phrase(POBox.random(language, country=country), language, country=country)
             if phrase is None:
                 break
             self.assertTrue(self.valid_phrase(phrase), six.u('phrase was: {}').format(phrase))
 
     def check_postcodes(self, language, country=None):
-        for i in xrange(1000):
+        for i in range(1000):
             phrase = PostCode.phrase('12345', language, country=country)
             if phrase is None:
                 break
             self.assertTrue(self.valid_phrase(phrase), six.u('phrase was: {}').format(phrase))
 
     def check_intersection_phrases(self, language, country=None):
-        for i in xrange(1000):
+        for i in range(1000):
             phrase = Intersection.phrase(language, country=country)
             if phrase is None:
                 break
             self.assertTrue(self.valid_phrase(phrase), six.u('phrase was: {}').format(phrase))
 
     def check_category_phrases(self, language, country=None):
-        for i in xrange(1000):
+        for i in range(1000):
             phrase = Category.phrase(language, 'amenity', 'restaurant', country=country)
             if phrase.category is None:
                 break

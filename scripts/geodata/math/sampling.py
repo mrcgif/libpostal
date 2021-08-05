@@ -41,6 +41,6 @@ def cdf(probs):
 
 def zipfian_distribution(n, b=1.0):
     """Distribution where the ith item's frequency is proportional to its rank"""
-    frequencies = [1. / (i ** b) for i in xrange(1, n + 1)]
+    frequencies = [1. / (i ** b) for i in range(1, n + 1)]
     total = sum(frequencies)
     return [f / total for f in frequencies]

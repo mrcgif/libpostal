@@ -1,12 +1,9 @@
 # -*- coding: utf-8 -*-
 import os
-import six
 import sys
-
-import pycountry
-
 from collections import OrderedDict
 
+import pycountry
 import six
 from lxml import etree
 
@@ -52,8 +49,8 @@ class CountryNames(object):
     def __init__(self, base_dir=CLDR_MAIN_PATH):
         self.base_dir = base_dir
 
-        self.country_alpha3_codes = {c.alpha2.lower(): c.alpha3.lower() for c in pycountry.countries}
-        self.iso_3166_names = {c.alpha2.lower(): c.name for c in pycountry.countries}
+        self.country_alpha3_codes = {c.alpha_2.lower(): c.alpha_3.lower() for c in pycountry.countries}
+        self.iso_3166_names = {c.alpha_2.lower(): c.name for c in pycountry.countries}
 
         self.language_country_names = {}
         self.country_language_names = defaultdict(dict)
@@ -74,7 +71,7 @@ class CountryNames(object):
             lang = lang.lower()
             self.language_country_names[lang] = names
 
-            for country, name in names.iteritems():
+            for country, name in names.items():
                 country = country.lower()
 
                 languages = get_country_languages(country, official=False) or OrderedDict([('en', 1)])
@@ -96,8 +93,8 @@ class CountryNames(object):
 
         for country, langs in six.iteritems(local_languages):
             names = country_local_language_names[country]
-            num_defaults = sum((1 for lang in names.keys() if langs.get(lang)))
-            for i, (lang, default) in enumerate(langs.iteritems()):
+            num_defaults = sum((1 for lang in list(names.keys()) if langs.get(lang)))
+            for i, (lang, default) in enumerate(langs.items()):
                 name = names.get(lang)
                 if not name:
                     continue
@@ -135,7 +132,7 @@ class CountryNames(object):
 
         display_names = {}
 
-        for country_code, names in country_names.iteritems():
+        for country_code, names in country_names.items():
             if country_code in LANGUAGE_COUNTRY_OVERRIDES.get(language, {}):
                 display_names[country_code] = safe_decode(LANGUAGE_COUNTRY_OVERRIDES[language][country_code])
                 continue
@@ -173,8 +170,8 @@ class CountryNames(object):
 
         country_code = country_code.lower()
         if language is None:
-            return six.u(' / ').join(OrderedDict.fromkeys(n.replace(six.u('-'), six.u(' '))
-                                     for n in self.country_official_names[country_code].values()).keys())
+            return ' / '.join(list(OrderedDict.fromkeys(n.replace('-', ' ')
+                                     for n in list(self.country_official_names[country_code].values())).keys()))
         else:
             return self.country_language_names.get(country_code, {}).get(language)
 

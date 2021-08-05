@@ -26,14 +26,14 @@ sys.path.append(os.path.realpath(os.path.join(this_dir, os.pardir, os.pardir)))
 from geodata.encoding import safe_decode
 from geodata.math.floats import isclose
 
-beginning_re = re.compile('^[^0-9\-]+', re.UNICODE)
-end_re = re.compile('[^0-9]+$', re.UNICODE)
+beginning_re = re.compile(r'^[^0-9\-]+', re.UNICODE)
+end_re = re.compile(r'[^0-9]+$', re.UNICODE)
 
-latitude_dms_regex = re.compile(ur'^(-?[0-9]{1,2})[ ]*[ :°ºd][ ]*([0-5]?[0-9])?[ ]*[:\'\u2032m]?[ ]*([0-5]?[0-9](?:\.\d+)?)?[ ]*[:\?\"\u2033s]?[ ]*(N|n|S|s)?$', re.I | re.UNICODE)
-longitude_dms_regex = re.compile(ur'^(-?1[0-8][0-9]|0?[0-9]{1,2})[ ]*[ :°ºd][ ]*([0-5]?[0-9])?[ ]*[:\'\u2032m]?[ ]*([0-5]?[0-9](?:\.\d+)?)?[ ]*[:\?\"\u2033s]?[ ]*(E|e|W|w)?$', re.I | re.UNICODE)
+latitude_dms_regex = re.compile(r'^(-?[0-9]{1,2})[ ]*[ :°ºd][ ]*([0-5]?[0-9])?[ ]*[:\'\u2032m]?[ ]*([0-5]?[0-9](?:\.\d+)?)?[ ]*[:\?\"\u2033s]?[ ]*(N|n|S|s)?$', re.I | re.UNICODE)
+longitude_dms_regex = re.compile(r'^(-?1[0-8][0-9]|0?[0-9]{1,2})[ ]*[ :°ºd][ ]*([0-5]?[0-9])?[ ]*[:\'\u2032m]?[ ]*([0-5]?[0-9](?:\.\d+)?)?[ ]*[:\?\"\u2033s]?[ ]*(E|e|W|w)?$', re.I | re.UNICODE)
 
-latitude_decimal_with_direction_regex = re.compile('^(-?[0-9][0-9](?:\.[0-9]+))[ ]*[ :°ºd]?[ ]*(N|n|S|s)$', re.I)
-longitude_decimal_with_direction_regex = re.compile('^(-?1[0-8][0-9]|0?[0-9][0-9](?:\.[0-9]+))[ ]*[ :°ºd]?[ ]*(E|e|W|w)$', re.I)
+latitude_decimal_with_direction_regex = re.compile(r'^(-?[0-9][0-9](?:\.[0-9]+))[ ]*[ :°ºd]?[ ]*(N|n|S|s)$', re.I)
+longitude_decimal_with_direction_regex = re.compile(r'^(-?1[0-8][0-9]|0?[0-9][0-9](?:\.[0-9]+))[ ]*[ :°ºd]?[ ]*(E|e|W|w)$', re.I)
 
 direction_sign_map = {'n': 1, 's': -1, 'e': 1, 'w': -1}
 
@@ -60,7 +60,7 @@ def degrees_to_decimal(degrees, minutes, seconds):
     minutes = int_or_float(minutes)
     seconds = int_or_float(seconds)
 
-    return degrees + (minutes / 60.0) + (seconds / 3600.0)
+    return degrees + (minutes // 60.0) + (seconds // 3600.0)
 
 
 def is_valid_latitude(latitude):
@@ -115,11 +115,11 @@ def latlon_to_decimal(latitude, longitude):
     have_lat = False
     have_lon = False
 
-    latitude = safe_decode(latitude).strip(u' ,;|')
-    longitude = safe_decode(longitude).strip(u' ,;|')
+    latitude = safe_decode(latitude).strip(' ,;|')
+    longitude = safe_decode(longitude).strip(' ,;|')
 
-    latitude = latitude.replace(u',', u'.')
-    longitude = longitude.replace(u',', u'.')
+    latitude = latitude.replace(',', '.')
+    longitude = longitude.replace(',', '.')
 
     lat_dms = latitude_dms_regex.match(latitude)
     lat_dir = latitude_decimal_with_direction_regex.match(latitude)
@@ -135,8 +135,8 @@ def latlon_to_decimal(latitude, longitude):
         latitude = return_type(d) * sign
         have_lat = True
     else:
-        latitude = re.sub(beginning_re, u'', latitude)
-        latitude = re.sub(end_re, u'', latitude)
+        latitude = re.sub(beginning_re, '', latitude)
+        latitude = re.sub(end_re, '', latitude)
 
     lon_dms = longitude_dms_regex.match(longitude)
     lon_dir = longitude_decimal_with_direction_regex.match(longitude)
@@ -152,8 +152,8 @@ def latlon_to_decimal(latitude, longitude):
         longitude = return_type(d) * sign
         have_lon = True
     else:
-        longitude = re.sub(beginning_re, u'', longitude)
-        longitude = re.sub(end_re, u'', longitude)
+        longitude = re.sub(beginning_re, '', longitude)
+        longitude = re.sub(end_re, '', longitude)
 
     latitude = float(latitude)
     longitude = float(longitude)

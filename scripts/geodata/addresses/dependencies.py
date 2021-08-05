@@ -7,6 +7,7 @@ this_dir = os.path.realpath(os.path.dirname(__file__))
 sys.path.append(os.path.realpath(os.path.join(this_dir, os.pardir, os.pardir)))
 
 from geodata.graph.topsort import topsort
+from functools import reduce
 
 
 class ComponentDependencies(object):
@@ -20,7 +21,7 @@ class ComponentDependencies(object):
     def __init__(self, graph):
         self.dependencies = {}
 
-        self.all_values = long('1' * len(graph), 2)
+        self.all_values = int('1' * len(graph), 2)
 
         self.dependency_order = [c for c in topsort(graph)]
 

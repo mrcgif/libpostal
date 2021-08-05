@@ -26,10 +26,10 @@ class AddressConfig(object):
         for filename in os.listdir(config_dir):
             if not filename.endswith('.yaml'):
                 continue
-            config = yaml.load(open(os.path.join(ADDRESS_CONFIG_DIR, filename)))
+            config = yaml.load(open(os.path.join(ADDRESS_CONFIG_DIR, filename)), Loader=yaml.FullLoader)
             countries = config.pop('countries', {})
 
-            for k in countries.keys():
+            for k in list(countries.keys()):
                 country_config = countries[k]
                 config_copy = copy.deepcopy(config)
                 countries[k] = recursive_merge(config_copy, country_config)
@@ -101,7 +101,7 @@ class AddressConfig(object):
             try:
                 check_probability_distribution(form_probs)
             except AssertionError:
-                print 'values were: {}'.format(forms)
+                print('values were: {}'.format(forms))
                 raise
 
             form_probs_cdf = cdf(form_probs)
@@ -120,7 +120,7 @@ class AddressConfig(object):
         if 'abbreviated_probability' in properties:
             probs.append(properties['abbreviated_probability'])
             abbreviated = properties['abbreviated']
-            assert isinstance(abbreviated, basestring)
+            assert isinstance(abbreviated, str)
             alternatives.append(abbreviated)
 
         if properties.get('sample', False) and 'sample_probability' in properties:
@@ -142,7 +142,7 @@ class AddressConfig(object):
         try:
             check_probability_distribution(probs)
         except AssertionError:
-            print 'values were: {}'.format(alternatives)
+            print('values were: {}'.format(alternatives))
             raise
 
         return alternatives, probs

@@ -75,7 +75,7 @@ def get_country_languages(country, official=True, overrides=True):
 
     if overrides:
         road_overrides = road_language_overrides.get(country)
-        if road_overrides and road_overrides.values()[0]:
+        if road_overrides and list(road_overrides.values())[0]:
             languages = road_overrides
         elif road_overrides:
             languages.update(road_overrides)

@@ -38,8 +38,8 @@ WIKI_BASE_URL = 'https://wiki.openstreetmap.org/wiki/Special:Export/'
 NOMINATIM_SPECIAL_PHRASES_PREFIX = 'Nominatim/Special Phrases'
 NOMINATIM_SPECIAL_PHRASES_URL = WIKI_BASE_URL + NOMINATIM_SPECIAL_PHRASES_PREFIX.replace(' ', '_')
 
-phrase_table_re = re.compile('\| ([^|]+) \|\| ([^|]+) \|\| ([^|]+) \|\| ([^|]+) \|\| ([\-YN])', re.I)
-wiki_link_re = re.compile('(?:\[\[([^\|\]]+(?<=\S))[\s]*(?:\|[\s]*)?(?:([^\]]+))?\]\])')
+phrase_table_re = re.compile(r'\| ([^|]+) \|\| ([^|]+) \|\| ([^|]+) \|\| ([^|]+) \|\| ([\-YN])', re.I)
+wiki_link_re = re.compile(r'(?:\[\[([^\|\]]+(?<=\S))[\s]*(?:\|[\s]*)?(?:([^\]]+))?\]\])')
 
 IGNORE_LANGUAGES = {
     # Interlingua

@@ -24,35 +24,35 @@ class Unit(NumberedComponent):
     max_units = 99
     max_basements = 2
 
-    hundreds_numbered_units_tens = [range(101, 110) + [100],
-                                    range(201, 210) + [200],
-                                    range(301, 310) + [300],
-                                    range(401, 410) + [400],
-                                    range(501, 510) + [500],
+    hundreds_numbered_units_tens = [list(range(101, 110)) + [100],
+                                    list(range(201, 210)) + [200],
+                                    list(range(301, 310)) + [300],
+                                    list(range(401, 410)) + [400],
+                                    list(range(501, 510)) + [500],
                                     ]
 
-    hundreds_numbered_units = [range(110, 200),
-                               range(210, 300),
-                               range(310, 400),
-                               range(410, 500),
-                               range(510, 600),
+    hundreds_numbered_units = [list(range(110, 200)),
+                               list(range(210, 300)),
+                               list(range(310, 400)),
+                               list(range(410, 500)),
+                               list(range(510, 600)),
                                ]
 
-    thousands_numbered_units = [range(1001, 1030) + [1000],
-                                range(2001, 2030) + [2000],
-                                range(3001, 3030) + [3000],
-                                range(4001, 4030) + [4000],
-                                range(5001, 5030) + [5000]
+    thousands_numbered_units = [list(range(1001, 1030)) + [1000],
+                                list(range(2001, 2030)) + [2000],
+                                list(range(3001, 3030)) + [3000],
+                                list(range(4001, 4030)) + [4000],
+                                list(range(5001, 5030)) + [5000]
                                 ]
 
-    numbered_units = range(1, 10)
-    numbered_units.extend(itertools.chain(*itertools.izip(*hundreds_numbered_units_tens)))
-    numbered_units.extend(range(10, 100))
-    numbered_units.extend(itertools.chain(*itertools.izip(*hundreds_numbered_units)))
-    numbered_units.extend(itertools.chain(*itertools.izip(*thousands_numbered_units)))
-    numbered_units.extend(range(10001, 10100) + [10000])
+    numbered_units = list(range(1, 10))
+    numbered_units.extend(itertools.chain(*zip(*hundreds_numbered_units_tens)))
+    numbered_units.extend(list(range(10, 100)))
+    numbered_units.extend(itertools.chain(*zip(*hundreds_numbered_units)))
+    numbered_units.extend(itertools.chain(*zip(*thousands_numbered_units)))
+    numbered_units.extend(list(range(10001, 10100)) + [10000])
     numbered_units.append(0)
-    numbered_units.extend(range(0, -max_basements - 1, -1))
+    numbered_units.extend(list(range(0, -max_basements - 1, -1)))
 
     unit_probs = zipfian_distribution(len(numbered_units), 0.7)
     unit_probs_cdf = cdf(unit_probs)
@@ -62,17 +62,17 @@ class Unit(NumberedComponent):
     num_digits_cdf = cdf(num_digits_probs)
 
     # For use with floors e.g. #301 more common than #389
-    positive_units_floors = range(1, 10) + [0] + range(10, max_units + 1)
+    positive_units_floors = list(range(1, 10)) + [0] + list(range(10, max_units + 1))
     positive_units_floors_probs = zipfian_distribution(len(positive_units_floors), 0.6)
     positive_units_floors_cdf = cdf(positive_units_floors_probs)
 
     # For basic positive units
-    positive_units = range(1, max_units + 1)
+    positive_units = list(range(1, max_units + 1))
     positive_units_probs = zipfian_distribution(len(positive_units), 0.6)
     positive_units_cdf = cdf(positive_units_probs)
 
     # For use with letters e.g. A0 less common
-    positive_units_letters = range(1, max_units + 1) + [0]
+    positive_units_letters = list(range(1, max_units + 1)) + [0]
     positive_units_letters_probs = zipfian_distribution(len(positive_units_letters), 0.6)
     positive_units_letters_cdf = cdf(positive_units_letters_probs)
 
@@ -157,13 +157,13 @@ class Unit(NumberedComponent):
 
             if random.random() < range_prob:
                 if direction_right:
-                    number2 += number
+                    number2 += int(number)
                 else:
-                    number2 = max(0, number - number2)
+                    number2 = max(0, int(number) - number2)
             if direction == 'right':
-                return u'{}-{}'.format(number, number2)
+                return '{}-{}'.format(number, number2)
             else:
-                return u'{}-{}'.format(number2, number)
+                return '{}-{}'.format(number2, number)
         else:
             alphabet = address_config.get_property('alphabet', language, country=country, default=latin_alphabet)
             alphabet_probability = address_config.get_property('alphabet_probability', language, country=country, default=None)
@@ -178,12 +178,12 @@ class Unit(NumberedComponent):
 
                 whitespace_probability = float(num_type_props.get('whitespace_probability', 0.0))
                 hyphen_probability = float(num_type_props.get('hyphen_probability', 0.0))
-                whitespace_phrase = u''
+                whitespace_phrase = ''
                 r = random.random()
                 if r < whitespace_probability:
-                    whitespace_phrase = u' '
+                    whitespace_phrase = ' '
                 elif r < (whitespace_probability + hyphen_probability):
-                    whitespace_phrase = u'-' 
+                    whitespace_phrase = '-' 
 
                 if num_type == cls.ALPHA_PLUS_NUMERIC:
                     return six.u('{}{}{}').format(letter, whitespace_phrase, number)

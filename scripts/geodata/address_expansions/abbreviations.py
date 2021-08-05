@@ -13,7 +13,7 @@ from geodata.text.tokenize import tokenize_raw, token_types
 from geodata.text.utils import non_breaking_dash_regex
 
 
-LOWER, UPPER, TITLE, MIXED = range(4)
+LOWER, UPPER, TITLE, MIXED = list(range(4))
 
 
 def token_capitalization(s):
@@ -27,7 +27,7 @@ def token_capitalization(s):
         return MIXED
 
 
-expansion_token_regex = re.compile('([^  \-\.]+)([\.\- ]+|$)')
+expansion_token_regex = re.compile(r'([^  \-\.]+)([\.\- ]+|$)')
 
 
 def recase_abbreviation(expansion, tokens, space_token=six.u(' ')):
@@ -47,16 +47,16 @@ def recase_abbreviation(expansion, tokens, space_token=six.u(' ')):
             if suf == six.u(' '):
                 suf = space_token
             if cap == LOWER:
-                strings.append(six.u('').join((e.lower(), suf)))
+                strings.append(''.join((e.lower(), suf)))
             elif cap == UPPER:
-                strings.append(six.u('').join((e.upper(), suf)))
+                strings.append(''.join((e.upper(), suf)))
             elif cap == TITLE:
-                strings.append(six.u('').join((e.title(), suf)))
+                strings.append(''.join((e.title(), suf)))
             elif t.lower() == e.lower():
                 strings.append(t)
             else:
-                strings.append(six.u('').join((e.title(), suf)))
-        return six.u('').join(strings)
+                strings.append(''.join((e.title(), suf)))
+        return ''.join(strings)
     else:
 
         strings = []
@@ -66,7 +66,7 @@ def recase_abbreviation(expansion, tokens, space_token=six.u(' ')):
                 strings.append(space_token)
             else:
                 strings.append(suf)
-        return six.u('').join(strings)
+        return ''.join(strings)
 
 
 def abbreviate(gazetteer, s, language, abbreviate_prob=0.3, separate_prob=0.2, add_period_hyphen_prob=0.3):
@@ -90,7 +90,7 @@ def abbreviate(gazetteer, s, language, abbreviate_prob=0.3, separate_prob=0.2, a
     i = 0
 
     def abbreviated_tokens(i, tokens, t, c, length, data, space_token=six.u(' ')):
-        data = [d.split(six.b('|')) for d in data]
+        data = [d.split('|') for d in data]
 
         # local copy
         abbreviated = []
@@ -139,7 +139,7 @@ def abbreviate(gazetteer, s, language, abbreviate_prob=0.3, separate_prob=0.2, a
                 if random.random() < separate_prob:
                     sub_tokens = tokenize(token)
                     if sub_tokens and sub_tokens[0][1] in (token_types.HYPHEN, token_types.DASH):
-                        token = six.u('').join((t for t, c in sub_tokens[1:]))
+                        token = ''.join((t for t, c in sub_tokens[1:]))
 
                     abbreviated.append(space_token)
                 if token.islower():
@@ -174,7 +174,7 @@ def abbreviate(gazetteer, s, language, abbreviate_prob=0.3, separate_prob=0.2, a
                 if separate:
                     sub_tokens = tokenize(token)
                     if sub_tokens and sub_tokens[-1][1] in (token_types.HYPHEN, token_types.DASH):
-                        token = six.u('').join((t for t, c in sub_tokens[:-1]))
+                        token = ''.join((t for t, c in sub_tokens[:-1]))
 
                 abbreviated.append(token)
                 if separate:
@@ -229,10 +229,10 @@ def abbreviate(gazetteer, s, language, abbreviate_prob=0.3, separate_prob=0.2, a
                         if sub_i < sub_n:
                             sub_token_abbreviated.append(six.u('-'))
 
-                abbreviated.append(six.u('').join(sub_token_abbreviated))
+                abbreviated.append(''.join(sub_token_abbreviated))
 
             if i < n - 1 and raw_tokens[i + 1][0] > sum(raw_tokens[i][:2]):
                 abbreviated.append(six.u(' '))
             i += 1
 
-    return six.u('').join(abbreviated).strip()
+    return ''.join(abbreviated).strip()

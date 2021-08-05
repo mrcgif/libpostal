@@ -74,11 +74,11 @@ class Digits(object):
 
     @classmethod
     def rewrite_full_width(cls, s):
-        return six.u('').join([cls.unicode_full_width_map.get(c, c) for c in s])
+        return ''.join([cls.unicode_full_width_map.get(c, c) for c in s])
 
     @classmethod
     def rewrite_standard_width(cls, s):
-        return six.u('').join([cls.full_width_digit_map.get(c, c) for c in s])
+        return ''.join([cls.full_width_digit_map.get(c, c) for c in s])
 
     @classmethod
     def rewrite_roman_numeral(cls, s):
@@ -338,7 +338,7 @@ class NumberedComponent(object):
 
         # If we're using something like "Floor A" or "Unit 2L", remove ordinal/affix items
         if has_alpha:
-            values, probs = zip(*[(v, p) for v, p in zip(values, probs) if v in ('numeric', 'null', 'standalone')])
+            values, probs = list(zip(*[(v, p) for v, p in zip(values, probs) if v in ('numeric', 'null', 'standalone')]))
             total = float(sum(probs))
             if isclose(total, 0.0):
                 return None

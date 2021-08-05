@@ -63,7 +63,7 @@ class PlaceReverseGeocoder(PointIndex):
         for element_id, props, deps in parse_osm(filename):
             props = {safe_decode(k): safe_decode(v) for k, v in six.iteritems(props)}
 
-            node_id = long(element_id.split(':')[-1])
+            node_id = int(element_id.split(':')[-1])
             lat = props.get('lat')
             lon = props.get('lon')
             if lat is None or lon is None:

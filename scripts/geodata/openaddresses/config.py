@@ -15,7 +15,7 @@ class OpenAddressesConfig(object):
     def __init__(self, path=OPENADDRESSES_PARSER_DATA_CONFIG):
         self.path = path
 
-        config = yaml.load(open(path))
+        config = yaml.load(open(path), Loader=yaml.FullLoader)
         self.config = config['global']
         self.country_configs = config['countries']
 

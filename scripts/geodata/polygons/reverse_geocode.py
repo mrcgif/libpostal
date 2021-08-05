@@ -192,7 +192,7 @@ class QuattroshapesReverseGeocoder(RTreePolygonIndex):
                     properties['qs_level'] = 'neighborhood'
 
                 have_all_props = False
-                for k, (prop, func) in aliases.iteritems():
+                for k, (prop, func) in aliases.items():
                     v = properties.get(prop, None)
                     if v is not None:
                         try:
@@ -396,7 +396,7 @@ class OSMReverseGeocoder(RTreePolygonIndex):
 
                     if interior:
                         # Polygon with holes constructor
-                        poly = cls.to_polygon(p, [zip(*p2.exterior.coords.xy) for p2 in interior], test_point=test_point)
+                        poly = cls.to_polygon(p, [list(zip(*p2.exterior.coords.xy)) for p2 in interior], test_point=test_point)
                         if poly is None or not poly.bounds or len(poly.bounds) != 4:
                             continue
                     # R-tree only stores the bounding box, so add the whole polygon
@@ -519,14 +519,14 @@ class OSMCountryReverseGeocoder(OSMReverseGeocoder):
 
         languages = []
         if not regional:
-            languages = get_country_languages(country).items()
+            languages = list(get_country_languages(country).items())
         else:
             if not all(regional.values()):
                 languages = get_country_languages(country)
                 languages.update(regional)
-                languages = languages.items()
+                languages = list(languages.items())
             else:
-                languages = regional.items()
+                languages = list(regional.items())
 
         default_languages = sorted(languages, key=operator.itemgetter(1), reverse=True)
 

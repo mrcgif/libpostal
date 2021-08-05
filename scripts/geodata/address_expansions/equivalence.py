@@ -18,7 +18,7 @@ def canonicals_for_language(data, language):
     canonicals = set()
 
     for d in data:
-        lang, dictionary, is_canonical, canonical = d.split(six.b('|'))
+        lang, dictionary, is_canonical, canonical = d.split('|')
         if language is None or lang == language:
             canonicals.add(canonical)
 
@@ -43,7 +43,7 @@ def equivalent(s1, s2, gazetteer, language):
     if len(abbreviated_s1) != len(abbreviated_s2):
         return False
 
-    for ((t1, c1, l1, d1), (t2, c2, l2, d2)) in izip(abbreviated_s1, abbreviated_s2):
+    for ((t1, c1, l1, d1), (t2, c2, l2, d2)) in zip(abbreviated_s1, abbreviated_s2):
         if c1 != token_types.PHRASE and c2 != token_types.PHRASE:
             if t1 != t2:
                 return False

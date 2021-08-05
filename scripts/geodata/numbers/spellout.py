@@ -32,7 +32,7 @@ class NumericExpressions(object):
             if filename.endswith('.yaml'):
                 lang = filename.split('.yaml')[0]
                 f = open(os.path.join(base_dir, filename))
-                data = yaml.load(f)
+                data = yaml.load(f, Loader=yaml.FullLoader)
 
                 default_separator = data.get('default_separator')
                 if default_separator is not None:
@@ -188,12 +188,12 @@ class NumericExpressions(object):
                 num -= (multiple * val)
             elif not did_left_multiply:
                 remainder = num % val
-                num /= val
+                num //= val
             else:
                 num = remainder
                 did_left_multiply = False
 
-        return six.u('').join(cardinal_part)
+        return ''.join(cardinal_part)
 
     def roman_numeral(self, num):
         numeral = self.spellout_cardinal(num, 'la')
@@ -252,7 +252,7 @@ class NumericExpressions(object):
                             ordinal = random.choice(ordinals)
                         right_separator = last_rule.get('right_separator', default_separator)
 
-                        return right_separator.join([six.u('').join(expression), ordinal['name']])
+                        return right_separator.join([''.join(expression), ordinal['name']])
                     else:
                         return None
                 elif last_rule.get('left') == 'add':
@@ -277,7 +277,7 @@ class NumericExpressions(object):
                             return None
                         last = ordinal['name']
                         left_separator = last_rule.get('left_separator', default_separator)
-                        return left_separator.join([six.u('').join(expression), ordinal['name']])
+                        return left_separator.join([''.join(expression), ordinal['name']])
                     else:
                         return None
                 else:
@@ -379,7 +379,7 @@ class NumericExpressions(object):
 
                 if left_multiply_rules and 'right' not in rule and 'left' not in rule:
                     left_multiply_rule = left_multiply_rules.pop()
-                    print 'left_multiply_rule', left_multiply_rule
+                    print('left_multiply_rule', left_multiply_rule)
                     left_separator = left_multiply_rule.get('left_separator', default_separator)
                     expression.append(left_separator)
                     expression.append(left_multiply_rule['name'])
@@ -390,7 +390,7 @@ class NumericExpressions(object):
                 num -= (multiple * val)
             elif not did_left_multiply:
                 remainder = num % val
-                num /= val
+                num //= val
             else:
                 num = remainder
                 remainder = 0
@@ -442,8 +442,8 @@ class NumericExpressions(object):
 
         parts = [first_hundred]
 
-        for i in xrange(1, int(math.ceil(math.log(num, 100)))):
-            part = self.spellout_cardinal(num / 100 ** i, lang, gender=gender, category=category)
+        for i in range(1, int(math.ceil(math.log(num, 100)))):
+            part = self.spellout_cardinal(num // 100 ** i, lang, gender=gender, category=category)
             if not part:
                 return None
             parts.append(part)

@@ -39,11 +39,11 @@ def download_and_unzip_file(url, out_dir):
 
 def download_pre_release_downloads(out_dir):
     for url in openaddresses_config.config.get('pre_release_downloads', []):
-        print(six.u('doing pre_release {}').format(safe_decode(url)))
+        print('doing pre_release {}'.format(safe_decode(url)))
 
         success = download_and_unzip_file(url, out_dir)
         if not success:
-            print(six.u('ERR: could not download {}').format(source))
+            print('ERR: could not download {}'.format(source))
             return False
     return True
 
@@ -56,7 +56,7 @@ def openaddresses_download_all_files(out_dir):
         sys.exit('Could not download state.txt file')
 
     reader = unicode_csv_reader(open(local_state_file_path), delimiter='\t')
-    headers = reader.next()
+    headers = next(reader)
 
     source_index = headers.index('source')
     url_index = headers.index('processed')
@@ -69,10 +69,10 @@ def openaddresses_download_all_files(out_dir):
         if not processed or not processed.strip():
             continue
 
-        print(six.u('doing {}').format(source))
+        print('doing {}'.format(source))
         success = download_and_unzip_file(processed, out_dir)
         if not success:
-            print(six.u('ERR: could not download {}').format(source))
+            print('ERR: could not download {}'.format(source))
 
     remove_file(local_state_file_path)
 
@@ -89,10 +89,10 @@ def openaddresses_download_configured_files(out_dir):
 
         download_pre_release_downloads(out_dir)
 
-        print(six.u('doing {}').format(safe_decode(source)))
+        print('doing {}'.format(safe_decode(source)))
         success = download_and_unzip_file(url, out_dir)
         if not success:
-            print(six.u('ERR: could not download {}').format(source))
+            print('ERR: could not download {}'.format(source))
 
 
 if __name__ == '__main__':

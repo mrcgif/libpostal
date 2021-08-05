@@ -15,6 +15,8 @@ this_dir = os.path.realpath(os.path.dirname(__file__))
 sys.path.append(os.path.realpath(os.path.join(this_dir, os.pardir, os.pardir)))
 
 from geodata.distance.haversine import haversine_distance
+from geodata.encoding import safe_encode, safe_decode
+from geodata.file_utils import ensure_dir
 
 
 class PointIndex(object):
@@ -38,6 +40,8 @@ class PointIndex(object):
                  include_only_properties=None,
                  precision=GEOHASH_PRECISION):
         if save_dir:
+            save_dir = os.path.abspath(save_dir)
+            ensure_dir(save_dir)
             self.save_dir = save_dir
         else:
             self.save_dir = None
@@ -87,10 +91,10 @@ class PointIndex(object):
         if include_only_properties is None and self.include_only_properties:
             include_only_properties = self.include_only_properties
         if include_only_properties is not None:
-            properties = {k: v for k, v in properties.iteritems() if k in include_only_properties}
+            properties = {k: v for k, v in properties.items() if k in include_only_properties}
 
         self.index_point(lat, lon)
-        self.points_db.Put(self.properties_key(self.i), json.dumps(properties))
+        self.points_db.Put(self.properties_key(self.i), safe_encode(json.dumps(properties)))
         self.i += 1
 
     def load_properties(self, filename):
@@ -120,13 +124,15 @@ class PointIndex(object):
         return array.array('d', json.load(open(os.path.join(d, cls.POINTS_FILENAME))))
 
     def properties_key(self, i):
-        return 'props:{}'.format(i)
+        return safe_encode('props:{}'.format(i))
 
     def get_properties(self, i):
-        return json.loads(self.points_db.Get(self.properties_key(i)))
+        key = self.properties_key(i)
+        properties = self.points_db.Get(key).decode('utf-8')
+        return json.loads(properties)
 
     def compact_points_db(self):
-        self.points_db.CompactRange('\x00', '\xff')
+        self.points_db.CompactRange(b'\x00', b'\xff')
 
     def save(self):
         self.save_index()
@@ -136,6 +142,7 @@ class PointIndex(object):
 
     @classmethod
     def load(cls, d):
+        d = os.path.abspath(d)
         index = cls.load_index(d)
         points = cls.load_points(d)
         points_db = LevelDB(os.path.join(d, cls.POINTS_DB_DIR))
@@ -144,7 +151,7 @@ class PointIndex(object):
         return point_index
 
     def __iter__(self):
-        for i in xrange(self.i):
+        for i in range(self.i):
             lat, lon = self.points[i * 2], self.points[i * 2 + 1]
             yield self.get_properties(i), lat, lon
 
@@ -155,12 +162,12 @@ class PointIndex(object):
         code = geohash.encode(latitude, longitude)[:self.precision]
         candidates = OrderedDict()
 
-        candidates.update([(k, None) for k in self.index.get(code, [])])
+        candidates.update([(k, None) for k in self.index.get(code) or []])
 
         for neighbor in geohash.neighbors(code):
-            candidates.update([(k, None) for k in self.index.get(neighbor, [])])
+            candidates.update([(k, None) for k in self.index.get(neighbor) or []])
 
-        return candidates.keys()
+        return list(candidates.keys())
 
     def point_distances(self, latitude, longitude):
         candidates = self.get_candidate_points(latitude, longitude)

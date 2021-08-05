@@ -54,9 +54,9 @@ class PostalCodes(object):
 
         cc_hyphen_probability = postal_codes_config.get_property('country_code_hyphen_probability', country=country, default=0.0)
 
-        separator = u''
+        separator = ''
         r = random.random()
         if r < cc_hyphen_probability:
-            separator = u'-'
+            separator = '-'
 
-        return u'{}{}{}'.format(country_code_phrase, separator, postal_code)
+        return '{}{}{}'.format(country_code_phrase, separator, postal_code)

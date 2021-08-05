@@ -20,8 +20,8 @@ from marisa_trie import BytesTrie
 
 DICTIONARIES_DIR = os.path.join(RESOURCES_DIR, 'dictionaries')
 
-PREFIX_KEY = u'\x02'
-SUFFIX_KEY = u'\x03'
+PREFIX_KEY = '\x02'
+SUFFIX_KEY = '\x03'
 
 POSSIBLE_ROMAN_NUMERALS = set(['i', 'ii', 'iii', 'iv', 'v', 'vi', 'vii', 'viii', 'ix',
                                'x', 'xi', 'xii', 'xiii', 'xiv', 'xv', 'xvi', 'xvii', 'xviii', 'xix',
@@ -65,7 +65,7 @@ class DictionaryPhraseFilter(PhraseFilter):
 
                         kvs[phrase][(language, dictionary_name, canonical)] = is_canonical
 
-        kvs = [(k, '|'.join([l, d, str(int(i)), safe_encode(c)])) for k, vals in kvs.iteritems() for (l, d, c), i in vals.iteritems()]
+        kvs = [(k, safe_encode('|'.join([l, d, str(int(i)), c]))) for k, vals in list(kvs.items()) for (l, d, c), i in list(vals.items())]
 
         self.trie = BytesTrie(kvs)
 
@@ -79,7 +79,7 @@ class DictionaryPhraseFilter(PhraseFilter):
         if len(s) == 0:
             return None, 0
 
-        for i in xrange(len(s) + 1):
+        for i in range(len(s) + 1):
             if not self.trie.has_keys_with_prefix(s[:i]):
                 i -= 1
                 break
@@ -112,15 +112,15 @@ class DictionaryPhraseFilter(PhraseFilter):
 
                 suffix_search, suffix_len = self.search_suffix(token)
                 if suffix_search and self.trie.get(token[(token_len - suffix_len):].rstrip('.')):
-                    yield ([(t, c)], token_types.PHRASE, suffix_len, map(safe_decode, suffix_search))
+                    yield ([(t, c)], token_types.PHRASE, suffix_len, list(map(safe_decode, suffix_search)))
                     continue
                 prefix_search, prefix_len = self.search_prefix(token)
                 if prefix_search and self.trie.get(token[:prefix_len]):
-                    yield ([(t, c)], token_types.PHRASE, prefix_len, map(safe_decode, prefix_search))
+                    yield ([(t, c)], token_types.PHRASE, prefix_len, list(map(safe_decode, prefix_search)))
                     continue
             else:
                 c = token_types.PHRASE
-            yield t, c, len(t), map(safe_decode, data)
+            yield t, c, len(t), list(map(safe_decode, data))
 
     def gen_phrases(self, s, canonical_only=False, languages=None):
         tokens = tokenize(s)
@@ -141,7 +141,7 @@ class DictionaryPhraseFilter(PhraseFilter):
                 else:
                     phrase = None
                     for d in data:
-                        lang, dictionary, is_canonical, canonical = d.split(six.b('|'))
+                        lang, dictionary, is_canonical, canonical = d.split('|')
 
                         if (bool(int(is_canonical)) or not canonical_only) and (languages is None or lang in languages or lang == 'all'):
                             phrase = phrase if phrase is not None else six.u(' ').join([t_i for t_i, c_i in t])
@@ -150,7 +150,7 @@ class DictionaryPhraseFilter(PhraseFilter):
     def string_contains_phrases(self, s, canonical_only=False, languages=None):
         phrases = self.gen_phrases(s, canonical_only=canonical_only, languages=languages)
         try:
-            phrases.next()
+            next(phrases)
             return True
         except StopIteration:
             return False

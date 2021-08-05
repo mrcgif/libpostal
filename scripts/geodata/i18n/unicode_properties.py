@@ -8,22 +8,17 @@ belongs to.
 
 import csv
 import os
-import requests
 import re
 import sys
 import tempfile
 import requests
 import subprocess
 
-from cStringIO import StringIO
-
+from io import BytesIO
 from collections import OrderedDict, defaultdict
 from itertools import islice
-
 from lxml import etree
-
 from operator import itemgetter
-
 from zipfile import ZipFile
 
 this_dir = os.path.realpath(os.path.dirname(__file__))
@@ -70,7 +65,7 @@ WORD_BREAKS_URL = 'http://unicode.org/Public/UNIDATA/auxiliary/WordBreakProperty
 
 ISO_15924_URL = 'http://unicode.org/iso15924/iso15924.txt.zip'
 
-scripts_header_template = u'''#ifndef UNICODE_SCRIPT_TYPES_H
+scripts_header_template = '''#ifndef UNICODE_SCRIPT_TYPES_H
 #define UNICODE_SCRIPT_TYPES_H
 
 #include <stdlib.h>
@@ -86,7 +81,7 @@ typedef enum {{
 #endif
 '''
 
-scripts_c_data_template = u'''
+scripts_c_data_template = '''
 script_t char_scripts[] = {{
     {char_scripts}
 }};
@@ -110,7 +105,7 @@ def unicode_to_integer(u):
 
 
 def script_name_constant(i, u):
-    return u'SCRIPT_{} = {}'.format(u.upper(), i)
+    return 'SCRIPT_{} = {}'.format(u.upper(), i)
 
 
 UNKNOWN_SCRIPT = 'Unknown'
@@ -130,7 +125,7 @@ def get_chars_by_script():
     for char_range, script, char_class in script_regex.findall(scripts_file.read()):
         script_range = parse_char_range(char_range)
         if len(script_range) == 2:
-            for i in xrange(script_range[0], script_range[1] + 1):
+            for i in range(script_range[0], script_range[1] + 1):
                 scripts[i] = script
         elif script_range:
             scripts[script_range[0]] = script
@@ -197,7 +192,7 @@ def get_unicode_blocks():
         char_range = parse_char_range(char_range)
 
         if len(char_range) == 2:
-            for i in xrange(char_range[0], char_range[1] + 1):
+            for i in range(char_range[0], char_range[1] + 1):
                 blocks[block.lower()].append(wide_unichr(i))
         elif char_range:
             blocks[block.lower()].append(wide_unichr(char_range[0]))
@@ -216,7 +211,7 @@ def get_unicode_properties():
         char_range = parse_char_range(char_range)
 
         if len(char_range) == 2:
-            for i in xrange(char_range[0], char_range[1] + 1):
+            for i in range(char_range[0], char_range[1] + 1):
                 props[prop.lower()].append(wide_unichr(i))
         elif char_range:
             props[prop.lower()].append(wide_unichr(char_range[0]))
@@ -227,7 +222,7 @@ def get_unicode_properties():
         char_range = parse_char_range(char_range)
 
         if len(char_range) == 2:
-            for i in xrange(char_range[0], char_range[1] + 1):
+            for i in range(char_range[0], char_range[1] + 1):
                 props[prop.lower()].append(wide_unichr(i))
         elif char_range:
             props[prop.lower()].append(wide_unichr(char_range[0]))
@@ -246,7 +241,7 @@ def get_word_break_properties():
         char_range = parse_char_range(char_range)
 
         if len(char_range) == 2:
-            for i in xrange(char_range[0], char_range[1] + 1):
+            for i in range(char_range[0], char_range[1] + 1):
                 props[prop].append(wide_unichr(i))
         elif char_range:
             props[prop].append(wide_unichr(char_range[0]))
@@ -255,7 +250,7 @@ def get_word_break_properties():
 
 
 def build_master_scripts_list(chars):
-    all_scripts = OrderedDict.fromkeys(filter(bool, chars))
+    all_scripts = OrderedDict.fromkeys(list(filter(bool, chars)))
 
     for i, script in enumerate(all_scripts.keys()):
         all_scripts[script] = i + 1
@@ -281,14 +276,14 @@ def get_script_codes(all_scripts):
 
         # This comes as a .zip
         script_codes_response = requests.get(ISO_15924_URL)
-        zf = ZipFile(StringIO(script_codes_response.content))
+        zf = ZipFile(BytesIO(script_codes_response.content))
         iso15924_filename = [name for name in zf.namelist() if name.startswith('iso15924')][0]
 
         # Strip out the comments, etc.
-        temp_iso15924_file = u'\n'.join([line.rstrip() for line in safe_decode(zf.read(iso15924_filename)).split('\n')
+        temp_iso15924_file = '\n'.join([line.rstrip() for line in safe_decode(zf.read(iso15924_filename)).split('\n')
                                         if line.strip() and not line.strip().startswith('#')])
 
-        f = open(LOCAL_ISO_15924_FILE, 'w')
+        f = open(LOCAL_ISO_15924_FILE, 'wb')
         f.write(safe_encode(temp_iso15924_file))
         f.close()
 
@@ -298,7 +293,7 @@ def get_script_codes(all_scripts):
     seen_scripts = set()
 
     # Scripts in the CLDR repos use 4-letter ISO-15924 codes, so map those
-    for code, _, name, _, _, _ in csv.reader(script_codes_file, delimiter=';'):
+    for code, _, name, _, _, _, _ in csv.reader(script_codes_file, delimiter=';'):
         if name in all_scripts:
             script_codes[code] = name
             seen_scripts.add(name)
@@ -311,7 +306,7 @@ def get_script_codes(all_scripts):
     value_aliases = get_property_value_aliases()
     script_aliases = value_aliases['sc']
 
-    for code, script in script_aliases.iteritems():
+    for code, script in script_aliases.items():
         if code not in script_codes and script in all_scripts:
             script_codes[code] = script
 
@@ -380,7 +375,7 @@ def get_script_languages():
     spoken_languages = set.union(*(set(get_country_languages(country)) for country in countries))
 
     script_code_languages = defaultdict(list)
-    for language, scripts in language_scripts.iteritems():
+    for language, scripts in language_scripts.items():
         if language not in spoken_languages:
             continue
         for script in scripts:
@@ -388,11 +383,11 @@ def get_script_languages():
 
     script_languages = defaultdict(list)
 
-    for script_code, script_name in script_codes.iteritems():
+    for script_code, script_name in script_codes.items():
         langs = script_code_languages.get(script_code, [])
         script_languages[script_name].extend(langs)
 
-    for name in all_scripts.iterkeys():
+    for name in all_scripts.keys():
         script_languages.setdefault(name, [])
 
     return script_languages
@@ -422,15 +417,15 @@ def main(out_dir=SRC_DIR):
 
     max_langs = 0
 
-    for script, langs in script_languages.iteritems():
+    for script, langs in script_languages.items():
         num_langs = len(langs)
         if num_langs > max_langs:
             max_langs = num_langs
 
     # Generate C header and constants
 
-    script_enum = u'''
-    '''.join(['SCRIPT_{} = {},'.format(s.upper(), i) for s, i in sorted(all_scripts.iteritems(), key=itemgetter(1))])
+    script_enum = '''
+    '''.join(['SCRIPT_{} = {},'.format(s.upper(), i) for s, i in sorted(iter(all_scripts.items()), key=itemgetter(1))])
 
     out_header.write(scripts_header_template.format(num_codepoints=NUM_CODEPOINTS,
                      max_langs=max_langs,
@@ -439,15 +434,15 @@ def main(out_dir=SRC_DIR):
 
     # Generate C data file
 
-    char_scripts_data = u''',
+    char_scripts_data = ''',
     '''.join([', '.join([str(all_scripts[sc or UNKNOWN_SCRIPT]) for sc in batch]) for batch in batch_iter(chars, 25)])
 
-    script_codes_data = u''',
-    '''.join([script_code_template.format(name=name.upper(), code=code) for code, name in script_codes.iteritems()])
+    script_codes_data = ''',
+    '''.join([script_code_template.format(name=name.upper(), code=code) for code, name in script_codes.items()])
 
-    sorted_lang_scripts = [script_languages[s] for s, i in sorted(all_scripts.iteritems(), key=itemgetter(1))]
+    sorted_lang_scripts = [script_languages[s] for s, i in sorted(iter(all_scripts.items()), key=itemgetter(1))]
 
-    script_language_data = u''',
+    script_language_data = ''',
     '''.join([script_language_template.format(num_langs=len(langs),
               languages='{{{}}}'.format(', '.join(['"{}"'.format(l) for l in langs]) if langs else 'NULL'))
               for langs in sorted_lang_scripts])

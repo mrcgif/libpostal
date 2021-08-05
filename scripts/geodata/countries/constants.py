@@ -255,8 +255,8 @@ class Countries(object):
     FORMER_SOVIET_UNION_COUNTRIES = set([RUSSIA, UKRAINE, BELARUS, KAZAKHSTAN, AZERBAIJAN, KYRGYZSTAN, GEORGIA, UZBEKISTAN, ARMENIA, TAJIKISTAN, MOLDOVA, TURKMENISTAN, LATVIA, LITHUANIA, ESTONIA])
     CJK_COUNTRIES = set([CHINA, JAPAN, SOUTH_KOREA, TAIWAN, HONG_KONG, MACAO])
 
-    all_country_iso_codes = set([c.alpha2.lower() for c in pycountry.countries])
+    all_country_iso_codes = set([c.alpha_2.lower() for c in list(pycountry.countries)])
 
     @classmethod
-    def is_valid_country_code(cls, alpha2_code):
-        return alpha2_code and alpha2_code.lower() in cls.all_country_iso_codes
+    def is_valid_country_code(cls, alpha_2_code):
+        return alpha_2_code and alpha_2_code.lower() in cls.all_country_iso_codes

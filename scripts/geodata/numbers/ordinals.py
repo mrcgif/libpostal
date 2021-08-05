@@ -15,7 +15,6 @@ sys.path.append(os.path.realpath(os.path.join(this_dir, os.pardir, os.pardir)))
 
 from geodata.text.phrases import PhraseFilter
 from geodata.encoding import safe_encode, safe_decode
-from geodata.i18n.unicode_paths import DATA_DIR
 
 from geodata.numbers.numex import NUMEX_DATA_DIR
 
@@ -29,7 +28,7 @@ class OrdinalSuffixTrie(PhraseFilter):
         if len(s) == 0:
             return None, 0
 
-        for i in xrange(len(s) + 1):
+        for i in range(len(s) + 1):
             if not self.trie.has_keys_with_prefix(s[:i]):
                 i -= 1
                 break
@@ -58,7 +57,7 @@ class OrdinalExpressions(object):
             if filename.endswith('.yaml'):
                 lang = filename.split('.yaml')[0]
                 f = open(os.path.join(base_dir, filename))
-                data = yaml.load(f)
+                data = yaml.load(f, Loader=yaml.FullLoader)
 
                 rules = data.get('rules')
                 if rules is not None and hasattr(rules, '__getslice__'):

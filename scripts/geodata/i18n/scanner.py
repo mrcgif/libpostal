@@ -17,9 +17,9 @@ class Scanner(object):
     def __init__(self, lexicon, flags=re.VERBOSE | re.I | re.UNICODE):
         self.lexicon = lexicon
 
-        regexes, responses = zip(*lexicon)
+        regexes, responses = list(zip(*lexicon))
 
-        self.regex = re.compile(u'|'.join([u'({})'.format(safe_decode(r)) for r in regexes]), flags)
+        self.regex = re.compile(r'|'.join(['({})'.format(safe_decode(r)) for r in regexes]), flags)
         self.responses = responses
 
     def scan(self, s):

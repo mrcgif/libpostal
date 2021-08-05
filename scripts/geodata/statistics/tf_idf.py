@@ -13,13 +13,13 @@ class IDFIndex(object):
         if self.finalized or not doc:
             return
 
-        for feature, count in doc.iteritems():
+        for feature, count in doc.items():
             self.idf_counts[feature] += 1
 
         self.N += 1
 
     def prune(self, min_count):
-        self.idf_counts = {k: count for k, count in self.idf_counts.iteritems() if count >= min_count}
+        self.idf_counts = {k: count for k, count in self.idf_counts.items() if count >= min_count}
 
     def corpus_frequency(self, key):
         return self.idf_counts.get(key, 0)
@@ -34,6 +34,6 @@ class IDFIndex(object):
         return (math.log(count + 1.0) * (math.log(float(self.N) / idf_count)))
 
     def tfidf_vector(self, token_counts):
-        tf_idf = [self.tfidf_score(t, count=c) for t, c in token_counts.iteritems()]
+        tf_idf = [self.tfidf_score(t, count=c) for t, c in token_counts.items()]
         norm = math.sqrt(sum((t ** 2 for t in tf_idf)))
         return [t / norm for t in tf_idf]

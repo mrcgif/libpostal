@@ -19,12 +19,12 @@ class Floor(NumberedComponent):
     # likely than 2, etc.
     max_floors = 10
     max_basements = 2
-    numbered_floors = range(max_floors + 1) + range(-1, -max_basements - 1, -1)
+    numbered_floors = list(range(max_floors + 1)) + list(range(-1, -max_basements - 1, -1))
     floor_probs = zipfian_distribution(len(numbered_floors), 0.75)
     floor_probs_cdf = cdf(floor_probs)
 
     # For use with letters e.g. A0 is probably not as common
-    floors_letters = range(1, max_floors + 1) + [0]
+    floors_letters = list(range(1, max_floors + 1)) + [0]
     floors_letters_probs = zipfian_distribution(len(floors_letters), 2.0)
     floors_letters_cdf = cdf(floors_letters_probs)
 
@@ -76,8 +76,8 @@ class Floor(NumberedComponent):
             else:
                 return safe_decode(number)
         elif num_type == cls.HYPHENATED_NUMBER:
-            number2 = number + sample_floors_range(1, cls.max_floors)
-            return u'{}-{}'.format(number, number2)
+            number2 = number + cls.sample_floors_range(1, cls.max_floors)
+            return '{}-{}'.format(number, number2)
         else:
             alphabet = address_config.get_property('alphabet', language, country=country, default=latin_alphabet)
             alphabet_probability = address_config.get_property('alphabet_probability', language, country=country, default=None)

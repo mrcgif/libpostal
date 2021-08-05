@@ -42,13 +42,13 @@ class PhraseFilter(object):
             item = queue.popleft()
             t, c = item
 
-            if t is not SENTINEL and trie.has_keys_with_prefix(u' '.join(ent_tokens + [t])):
+            if t is not SENTINEL and trie.has_keys_with_prefix(' '.join(ent_tokens + [t])):
                 ent.append(item)
                 ent_tokens.append(item[0])
             elif ent_tokens:
-                res = trie.get(u' '.join(ent_tokens)) or None
+                res = trie.get(' '.join(ent_tokens)) or None
                 if res is not None:
-                    yield (True, ent, map(self.deserialize, res))
+                    yield (True, ent, list(map(self.deserialize, res)))
                     queue.appendleft(item)
                     ent = []
                     ent_tokens = []
@@ -60,11 +60,11 @@ class PhraseFilter(object):
                 else:
                     have_phrase = False
 
-                    for i in xrange(len(ent) - 1, 0, -1):
+                    for i in range(len(ent) - 1, 0, -1):
                         remainder = ent[i:]
-                        res = trie.get(u' '.join([e[0] for e in ent[:i]])) or None
+                        res = trie.get(' '.join([e[0] for e in ent[:i]])) or None
                         if res is not None:
-                            yield (True, ent[:i], map(self.deserialize, res))
+                            yield (True, ent[:i], list(map(self.deserialize, res)))
                             have_phrase = True
                             break
 

@@ -17,9 +17,9 @@ sys.path.append(os.path.realpath(os.path.join(this_dir, os.pardir, os.pardir)))
 from geodata.file_utils import download_file
 from geodata.string_utils import wide_unichr, wide_ord
 
-from unicode_properties import *
+from .unicode_properties import *
 
-from unicode_paths import UNICODE_DATA_DIR
+from .unicode_paths import UNICODE_DATA_DIR
 
 UNIDATA_URL = 'http://unicode.org/Public/UNIDATA/UnicodeData.txt'
 
@@ -77,11 +77,11 @@ def parse_unicode_data():
 
 
 def iter_unicode_combining_classes():
-    return unicode_combining_classes.iteritems()
+    return iter(unicode_combining_classes.items())
 
 
 def iter_unicode_categories():
-    return unicode_categories.iteritems()
+    return iter(unicode_categories.items())
 
 
 def get_unicode_category(cat):
@@ -151,7 +151,7 @@ def init_unicode_categories():
     unicode_categories.update(get_unicode_categories())
     unicode_combining_classes.update(get_unicode_combining_classes())
 
-    for key in unicode_categories.keys():
+    for key in list(unicode_categories.keys()):
         unicode_general_categories[key[0]].extend(unicode_categories[key])
 
     script_chars = get_chars_by_script()
@@ -169,10 +169,10 @@ def init_unicode_categories():
 
     unicode_word_breaks.update(get_word_break_properties())
 
-    for key, value in get_property_value_aliases().iteritems():
+    for key, value in get_property_value_aliases().items():
         key = unicode_property_aliases.get(key, key)
         if key == GENERAL_CATEGORY_PROP:
-            for k, v in value.iteritems():
+            for k, v in value.items():
                 k = k.lower()
                 unicode_category_aliases[k] = v
                 if '_' in k:
@@ -181,7 +181,7 @@ def init_unicode_categories():
         unicode_property_value_aliases[key] = value
 
 
-regex_chars = re.compile('([\[\]\{\}\-\^])')
+regex_chars = re.compile(r'([\[\]\{\}\-\^])')
 
 
 def replace_regex_chars(s):
@@ -201,7 +201,7 @@ def make_char_set_regex(chars):
     group_end = None
     last_ord = -2
 
-    ords = map(wide_ord, chars)
+    ords = list(map(wide_ord, chars))
     ords.sort()
 
     ords.append(None)
@@ -223,7 +223,7 @@ def make_char_set_regex(chars):
 
         last_ord = o
 
-    return u'[{}]'.format(u''.join(groups))
+    return '[{}]'.format(''.join(groups))
 
 
 name_category = [
@@ -266,7 +266,7 @@ def main():
         if cat not in unicode_categories:
             continue
         chars = unicode_categories[cat]
-        print u'{} = {};'.format(name, make_char_set_regex(chars))
+        print('{} = {};'.format(name, make_char_set_regex(chars)))
 
 
 if __name__ == '__main__':

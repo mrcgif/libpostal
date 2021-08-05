@@ -12,7 +12,7 @@ Uses XML transforms from the CLDR repository.
 import argparse
 import codecs
 import csv
-import htmlentitydefs
+import html.entities
 import itertools
 import os
 import re
@@ -20,17 +20,15 @@ import requests
 import six
 import sys
 import time
-import urlparse
+import urllib.parse
 import unicodedata
 
 from collections import defaultdict, deque
-
 from lxml import etree
-
 from scanner import Scanner
-from unicode_data import *
-from unicode_properties import *
-from unicode_paths import CLDR_DIR
+from .unicode_data import *
+from .unicode_properties import *
+from .unicode_paths import CLDR_DIR
 
 this_dir = os.path.realpath(os.path.dirname(__file__))
 sys.path.append(os.path.realpath(os.path.join(this_dir, os.pardir, os.pardir)))
@@ -46,9 +44,9 @@ BACKWARD_TRANSFORM = 3
 BIDIRECTIONAL_TRANSFORM = 4
 
 PRE_TRANSFORM_OP = '::'
-BACKWARD_TRANSFORM_OPS = set([u'←', u'<'])
-FORWARD_TRANSFORM_OPS = set([u'→', u'>'])
-BIDIRECTIONAL_TRANSFORM_OPS = set([u'↔', u'<>'])
+BACKWARD_TRANSFORM_OPS = set(['←', '<'])
+FORWARD_TRANSFORM_OPS = set(['→', '>'])
+BIDIRECTIONAL_TRANSFORM_OPS = set(['↔', '<>'])
 
 ASSIGNMENT_OP = '='
 
@@ -67,19 +65,19 @@ start_of_han_regex = re.compile(START_OF_HAN_VAR.replace('$', '\$'))
 
 word_boundary_var_regex = re.compile(WORD_BOUNDARY_VAR.replace('$', '\$'))
 
-WORD_BOUNDARY_CHAR = u'\u0001'
-EMPTY_TRANSITION = u'\u0004'
+WORD_BOUNDARY_CHAR = '\u0001'
+EMPTY_TRANSITION = '\u0004'
 
-NAMESPACE_SEPARATOR_CHAR = u"|"
+NAMESPACE_SEPARATOR_CHAR = "|"
 
-WORD_BOUNDARY_CHAR = u"\x01"
-PRE_CONTEXT_CHAR = u"\x86"
-POST_CONTEXT_CHAR = u"\x87"
-EMPTY_TRANSITION_CHAR = u"\x04"
-REPEAT_CHAR = u"\x05"
-GROUP_INDICATOR_CHAR = u"\x1d"
-BEGIN_SET_CHAR = u"\x0f"
-END_SET_CHAR = u"\x0e"
+WORD_BOUNDARY_CHAR = "\x01"
+PRE_CONTEXT_CHAR = "\x86"
+POST_CONTEXT_CHAR = "\x87"
+EMPTY_TRANSITION_CHAR = "\x04"
+REPEAT_CHAR = "\x05"
+GROUP_INDICATOR_CHAR = "\x1d"
+BEGIN_SET_CHAR = "\x0f"
+END_SET_CHAR = "\x0e"
 
 BIDIRECTIONAL_TRANSLITERATORS = {
     'fullwidth-halfwidth': 'halfwidth-fullwidth'
@@ -145,12 +143,12 @@ CONTEXT_TYPE_REGEX = 'CONTEXT_TYPE_REGEX'
 
 all_transforms = set()
 
-pre_transform_full_regex = re.compile('::[\s]*(.*)[\s]*', re.UNICODE)
-pre_transform_regex = re.compile('[\s]*([^\s\(\)]*)[\s]*(?:\((.*)\)[\s]*)?', re.UNICODE)
-assignment_regex = re.compile(u"(?:[\s]*(\$[^\s\=]+)[\s]*\=[\s]*(?!=[\s])(.*)(?<![\s])[\s]*)", re.UNICODE)
-transform_regex = re.compile(u"(?:[\s]*(?!=[\s])(.*?)(?<![\s])[\s]*)((?:<>)|[←<→>↔])(?:[\s]*(?!=[\s])(.*)(?<![\s])[\s]*)", re.UNICODE)
+pre_transform_full_regex = re.compile(r'::[\s]*(.*)[\s]*', re.UNICODE)
+pre_transform_regex = re.compile(r'[\s]*([^\s\(\)]*)[\s]*(?:\((.*)\)[\s]*)?', re.UNICODE)
+assignment_regex = re.compile("(?:[\s]*(\$[^\s\=]+)[\s]*\=[\s]*(?!=[\s])(.*)(?<![\s])[\s]*)", re.UNICODE)
+transform_regex = re.compile("(?:[\s]*(?!=[\s])(.*?)(?<![\s])[\s]*)((?:<>)|[←<→>↔])(?:[\s]*(?!=[\s])(.*)(?<![\s])[\s]*)", re.UNICODE)
 
-newline_regex = re.compile('[\n]+')
+newline_regex = re.compile(r'[\n]+')
 
 quoted_string_regex = re.compile(r'\'.*?\'', re.UNICODE)
 
@@ -173,8 +171,8 @@ unicode_property_regexes = [
 ]
 
 rule_map = {
-    u'[:Latin:] { [:Mn:]+ → ;': ':: {}'.format(STRIP_MARK),
-    u':: [[[:Greek:][:Mn:][:Me:]] [\:-;?·;·]] ;': u':: [[[:Greek:][́̀᾿᾿˜̑῀¨ͺ´`῀᾿῎῍῏῾῞῝῟΅῭῁ˉ˘]] [\'\:-;?·;·]]',
+    '[:Latin:] { [:Mn:]+ → ;': ':: {}'.format(STRIP_MARK),
+    ':: [[[:Greek:][:Mn:][:Me:]] [\:-;?·;·]] ;': ':: [[[:Greek:][́̀᾿᾿˜̑῀¨ͺ´`῀᾿῎῍῏῾῞῝῟΅῭῁ˉ˘]] [\'\:-;?·;·]]',
 
 }
 
@@ -189,19 +187,19 @@ regex_char_set = re.compile(r'\[(.*?)(?<!\\)\]', re.UNICODE)
 
 char_class_regex_str = '\[(?:[^\[\]]*\[[^\[\]]*\][^\[\]]*)*[^\[\]]*\]'
 
-nested_char_class_regex = re.compile('\[(?:[^\[\]]*\[[^\[\]]*\][^\[\]]*)+[^\[\]]*\]', re.UNICODE)
+nested_char_class_regex = re.compile(r'\[(?:[^\[\]]*\[[^\[\]]*\][^\[\]]*)+[^\[\]]*\]', re.UNICODE)
 
 range_regex = re.compile(r'[\\]?([^\\])\-[\\]?([^\\])', re.UNICODE)
-var_regex = re.compile('[\s]*\$([A-Za-z_\-]+[A-Za-z_0-9\-]*)[\s]*')
+var_regex = re.compile(r'[\s]*\$([A-Za-z_\-]+[A-Za-z_0-9\-]*)[\s]*')
 
-context_regex = re.compile(u'(?:[\s]*(?!=[\s])(.*?)(?<![\s])[\s]*{)?(?:[\s]*([^}{]*)[\s]*)(?:}[\s]*(?!=[\s])(.*)(?<![\s])[\s]*)?', re.UNICODE)
+context_regex = re.compile(r'(?:[\s]*(?!=[\s])(.*?)(?<![\s])[\s]*{)?(?:[\s]*([^}{]*)[\s]*)(?:}[\s]*(?!=[\s])(.*)(?<![\s])[\s]*)?', re.UNICODE)
 
 paren_regex = re.compile(r'\(.*\)', re.UNICODE)
 
 group_ref_regex_str = '\$[0-9]+'
 group_ref_regex = re.compile(group_ref_regex_str)
 
-comment_regex = re.compile('(?<!\')#(?!=\')')
+comment_regex = re.compile(r'(?<!\')#(?!=\')')
 
 
 # Limited subset of regular expressions used in transforms
@@ -278,7 +276,7 @@ transform_scanner = Scanner([
     ('\)', RPAREN),
     ('\|', REVISIT),
     ('[\s]+', WHITESPACE),
-    (ur'[\ud800-\udbff][\udc00-\udfff]', WIDE_CHARACTER),
+    (r'[\ud800-\udbff][\udc00-\udfff]', WIDE_CHARACTER),
     (r'[^\s]', CHARACTER),
 ], re.UNICODE)
 
@@ -310,14 +308,14 @@ char_set_scanner = Scanner([
     ('&', INTERSECTION),
     ('-', DIFFERENCE),
     ('\$', WORD_BOUNDARY),
-    (ur'[\ud800-\udbff][\udc00-\udfff]', WIDE_CHARACTER),
+    (r'[\ud800-\udbff][\udc00-\udfff]', WIDE_CHARACTER),
     (r'\{[^\s]+\}', BRACKETED_CHARACTER),
     (r'[^\s]', CHARACTER),
 ])
 
 NUM_CODEPOINTS_16 = 65536
 
-all_chars = set([unichr(i) for i in six.moves.xrange(NUM_CODEPOINTS_16)])
+all_chars = set([chr(i) for i in six.moves.xrange(NUM_CODEPOINTS_16)])
 
 control_chars = set([c for c in all_chars if unicodedata.category(c) in ('Cc', 'Cn', 'Cs')])
 
@@ -341,7 +339,7 @@ def parse_transforms(d=CLDR_TRANSFORMS_DIR):
 
 def replace_html_entity(ent):
     name = ent.strip('&;')
-    return wide_unichr(htmlentitydefs.name2codepoint[name])
+    return wide_unichr(html.entities.name2codepoint[name])
 
 
 def parse_regex_char_range(regex):
@@ -582,7 +580,7 @@ def split_rule(rule):
                 in_set = False
         elif token_type == END and not in_set:
             current_token.append(token)
-            splits.append(u''.join(current_token).strip())
+            splits.append(''.join(current_token).strip())
             current_token = []
         else:
             current_token.append(token)
@@ -633,7 +631,7 @@ def get_raw_rules_and_variables(xml, reverse=False):
             continue
         elif in_compound_rule:
             compound_rule.append(rule)
-            rule = u''.join(compound_rule)
+            rule = ''.join(compound_rule)
             in_compound_rule = False
             compound_rule = []
 
@@ -725,7 +723,7 @@ def char_permutations(s, current_filter=all_chars, reverse=False):
             open_brackets -= 1
             current_set.append(token)
             if open_brackets == 0:
-                char_set = parse_regex_char_set(u''.join(current_set), current_filter=current_filter)
+                char_set = parse_regex_char_set(''.join(current_set), current_filter=current_filter)
                 if char_set:
                     add_char_type(current_chars, char_set)
                 current_set = []
@@ -774,18 +772,18 @@ def char_permutations(s, current_filter=all_chars, reverse=False):
     return char_types, revisit_char_types, groups
 
 string_replacements = {
-    u'[': u'\[',
-    u']': u'\]',
-    u'(': u'\(',
-    u')': u'\)',
-    u'{': u'\{',
-    u'}': u'\{',
-    u'$': u'\$',
-    u'^': u'\^',
-    u'-': u'\-',
-    u'\\': u'\\\\',
-    u'*': u'\*',
-    u'+': u'\+',
+    '[': '\[',
+    ']': '\]',
+    '(': '\(',
+    ')': '\)',
+    '{': '\{',
+    '}': '\{',
+    '$': '\$',
+    '^': '\^',
+    '-': '\-',
+    '\\': '\\\\',
+    '*': '\*',
+    '+': '\+',
 }
 
 escape_sequence_long_regex = re.compile(r'(\\x[0-9a-f]{2})([0-9a-f])', re.I)
@@ -793,13 +791,13 @@ escape_sequence_long_regex = re.compile(r'(\\x[0-9a-f]{2})([0-9a-f])', re.I)
 
 def replace_long_escape_sequence(s):
     def replace_match(m):
-        return u'{}""{}'.format(m.group(1), m.group(2))
+        return '{}""{}'.format(m.group(1), m.group(2))
 
     return escape_sequence_long_regex.sub(replace_match, s)
 
 
 def quote_string(s):
-    return u'"{}"'.format(replace_long_escape_sequence(safe_decode(s).replace('"', '\\"')))
+    return '"{}"'.format(replace_long_escape_sequence(safe_decode(s).replace('"', '\\"')))
 
 
 def char_types_string(char_types, escape=True):
@@ -811,16 +809,16 @@ def char_types_string(char_types, escape=True):
     ret = []
 
     for chars in char_types:
-        template = u'{}' if len(chars) == 1 else u'[{}]'
+        template = '{}' if len(chars) == 1 else '[{}]'
         norm = []
         for c in chars:
             if escape:
                 c = string_replacements.get(c, c)
             norm.append(c)
 
-        ret.append(template.format(u''.join(norm)))
+        ret.append(template.format(''.join(norm)))
 
-    return u''.join(ret)
+    return ''.join(ret)
 
 
 def format_groups(char_types, groups):
@@ -828,12 +826,12 @@ def format_groups(char_types, groups):
     last_end = 0
     for start, end in groups:
         group_regex.append(char_types_string(char_types[last_end:start]))
-        group_regex.append(u'(')
+        group_regex.append('(')
         group_regex.append(char_types_string(char_types[start:end]))
-        group_regex.append(u')')
+        group_regex.append(')')
         last_end = end
     group_regex.append(char_types_string(char_types[last_end:]))
-    return u''.join(group_regex)
+    return ''.join(group_regex)
 
 charset_regex = re.compile(r'(?<!\\)\[')
 
@@ -936,7 +934,7 @@ def parse_transform_rules(name, xml, reverse=False, transforms_only=False):
     # Replace variables within variables
     while True:
         num_found = 0
-        for k, v in variables.items():
+        for k, v in list(variables.items()):
             if var_regex.search(v):
                 v = var_regex.sub(get_var, v)
                 variables[k] = v
@@ -988,20 +986,20 @@ def parse_transform_rules(name, xml, reverse=False, transforms_only=False):
                     if open_brackets == 0:
                         in_set = False
                 elif token_type == BEFORE_CONTEXT and not in_set:
-                    left_pre_context = u''.join(current_token)
+                    left_pre_context = ''.join(current_token)
 
                     current_token = []
                 elif token_type == AFTER_CONTEXT and not in_set:
                     have_post_context = True
-                    left = u''.join(current_token)
+                    left = ''.join(current_token)
                     current_token = []
                 else:
                     current_token.append(token)
 
             if have_post_context:
-                left_post_context = u''.join(current_token)
+                left_post_context = ''.join(current_token)
             else:
-                left = u''.join(current_token).strip()
+                left = ''.join(current_token).strip()
 
             right_pre_context = None
             right_post_context = None
@@ -1023,19 +1021,19 @@ def parse_transform_rules(name, xml, reverse=False, transforms_only=False):
                     if open_brackets == 0:
                         in_set = False
                 elif token_type == BEFORE_CONTEXT and not in_set:
-                    right_pre_context = u''.join(current_token)
+                    right_pre_context = ''.join(current_token)
                     current_token = []
                 elif token_type == AFTER_CONTEXT and not in_set:
                     have_post_context = True
-                    right = u''.join(current_token)
+                    right = ''.join(current_token)
                     current_token = []
                 else:
                     current_token.append(token)
 
             if have_post_context:
-                right_post_context = u''.join(current_token)
+                right_post_context = ''.join(current_token)
             else:
-                right = u''.join(current_token)
+                right = ''.join(current_token)
 
             if start_of_han_regex.search(left) or start_of_han_regex.search(right):
                 continue
@@ -1079,7 +1077,7 @@ def parse_transform_rules(name, xml, reverse=False, transforms_only=False):
             if left is not None:
                 left_chars, _, left_groups = char_permutations(left.strip(), current_filter=current_filter)
                 if not left_chars and (left.strip() or not (left_pre_context and left_post_context)):
-                    print 'ignoring', rule
+                    print('ignoring', rule)
                     continue
                 left_chars = list(left_chars)
 
@@ -1158,7 +1156,7 @@ PREPEND_STEP = 'PREPEND_STEP'
 
 
 html_escapes = {'&{};'.format(name): safe_encode(wide_unichr(value))
-                for name, value in six.iteritems(htmlentitydefs.name2codepoint)
+                for name, value in six.iteritems(html.entities.name2codepoint)
                 }
 
 html_escapes.update({'&#{};'.format(i): safe_encode(wide_unichr(i))
@@ -1391,7 +1389,7 @@ def get_all_transform_rules():
     dependency_queue = deque(to_latin)
     retain_transforms |= to_latin
 
-    print retain_transforms
+    print(retain_transforms)
 
     seen = set()
 
@@ -1447,7 +1445,7 @@ def get_all_transform_rules():
 
     transforms.update(extra_transforms)
 
-    for name, steps in transforms.iteritems():
+    for name, steps in transforms.items():
         if name in supplemental_transliterations:
             for step_type, rules in supplemental_transliterations[name]:
                 if step_type == EXISTING_STEP:
@@ -1478,7 +1476,7 @@ def get_all_transform_rules():
     return transforms_data, steps_data, rules_data
 
 
-transliteration_data_template = u'''#include <stdlib.h>
+transliteration_data_template = '''#include <stdlib.h>
 
 transliteration_rule_source_t rules_source[] = {{
     {all_rules}
@@ -1495,7 +1493,7 @@ transliterator_source_t transliterators_source[] = {{
 '''
 
 
-transliterator_script_data_template = u'''
+transliterator_script_data_template = '''
 #include "unicode_scripts.h"
 
 typedef struct script_transliteration_rule {{
@@ -1620,12 +1618,12 @@ def write_transliterator_scripts_file(filename):
     rules = []
     all_transliterators = []
     index = 0
-    for script, i in unicode_script_ids.iteritems():
+    for script, i in unicode_script_ids.items():
         spec = script_transliterators.get(script.lower())
         if not spec:
             continue
         script_type = 'SCRIPT_{}'.format(script.upper())
-        for lang, transliterators in spec.iteritems():
+        for lang, transliterators in spec.items():
             lang = '""' if not lang else quote_string(lang)
             num_transliterators = len(transliterators)
             rules.append(transliterator_rule_template.format(script_type=script_type,
@@ -1646,21 +1644,21 @@ def write_transliterator_scripts_file(filename):
 def write_transliteration_data_file(filename):
     transforms, steps, rules = get_all_transform_rules()
 
-    all_transforms = u''',
-    '''.join([u'{{{}}}'.format(u','.join(t)) for t in transforms])
+    all_transforms = ''',
+    '''.join(['{{{}}}'.format(','.join(t)) for t in transforms])
 
-    all_steps = u''',
-    '''.join([u'{{{}}}'.format(u','.join(s)) for s in steps])
+    all_steps = ''',
+    '''.join(['{{{}}}'.format(','.join(s)) for s in steps])
 
     for r in rules:
         try:
-            r = u','.join(r)
+            r = ','.join(r)
         except Exception:
             print('Exception in rule')
             print(r)
 
-    all_rules = u''',
-    '''.join([u'{{{}}}'.format(u','.join(r)) for r in rules])
+    all_rules = ''',
+    '''.join(['{{{}}}'.format(','.join(r)) for r in rules])
 
     template = transliteration_data_template.format(
         all_transforms=all_transforms,

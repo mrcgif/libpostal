@@ -80,7 +80,7 @@ class NameDeduper(object):
         tokens1_only = [t for t, c in tokens1]
         tokens2_only = [t for t, c in tokens2]
 
-        if u''.join(tokens1_only) == u''.join(tokens2_only):
+        if ''.join(tokens1_only) == ''.join(tokens2_only):
             return 1.0
         else:
             # Many Han/Hangul characters are common, shouldn't use IDF
@@ -98,7 +98,7 @@ class NameDeduper(object):
         tokens2_only = [t for t, c in tokens2]
 
         # Test exact equality, also handles things like Cabbage Town == Cabbagetown
-        if u''.join(tokens1_only) == u''.join(tokens2_only):
+        if ''.join(tokens1_only) == ''.join(tokens2_only):
             return 1.0
         else:
             return soft_tfidf_similarity(tokens1_only, tokens2_only, idf)

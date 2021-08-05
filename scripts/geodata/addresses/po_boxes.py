@@ -24,11 +24,11 @@ class POBox(NumberedComponent):
 
     @classmethod
     def random_digits_with_prefix(cls, num_digits, prefix=six.u('')):
-        return six.u('').join([prefix, safe_decode(cls.random_digits(num_digits))])
+        return ''.join([prefix, safe_decode(cls.random_digits(num_digits))])
 
     @classmethod
     def random_digits_with_suffix(cls, num_digits, suffix=six.u('')):
-        return six.u('').join([safe_decode(cls.random_digits(num_digits)), suffix])
+        return ''.join([safe_decode(cls.random_digits(num_digits)), suffix])
 
     @classmethod
     def random_letter(cls, language, country=None):

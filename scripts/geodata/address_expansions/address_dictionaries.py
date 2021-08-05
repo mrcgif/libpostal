@@ -14,11 +14,11 @@ ADDRESS_EXPANSIONS_DIR = os.path.join(RESOURCES_DIR, 'dictionaries')
 ADDRESS_HEADER_FILE = os.path.join(this_dir, os.pardir, os.pardir, os.pardir, 'src', 'address_expansion_rule.h')
 ADDRESS_DATA_FILE = os.path.join(this_dir, os.pardir, os.pardir, os.pardir, 'src', 'address_expansion_data.c')
 
-address_language_index_template = u'{{{language}, {index}, {length}}}'
-address_expansion_rule_template = u'{{{phrase}, {num_dictionaries}, {{{dictionaries}}}, {canonical_index}}}'
+address_language_index_template = '{{{language}, {index}, {length}}}'
+address_expansion_rule_template = '{{{phrase}, {num_dictionaries}, {{{dictionaries}}}, {canonical_index}}}'
 
 
-address_expansion_rule_header_template = u'''
+address_expansion_rule_header_template = '''
 #ifndef ADDRESS_EXPANSION_RULE_H
 #define ADDRESS_EXPANSION_RULE_H
 
@@ -47,7 +47,7 @@ typedef struct address_language_index {{
 #endif
 '''
 
-address_expansion_data_file_template = u'''
+address_expansion_data_file_template = '''
 char *canonical_strings[] = {{
     {canonical_strings}
 }};
@@ -120,18 +120,18 @@ def read_dictionary_file(path):
         if not line.strip():
             continue
 
-        if u'}' in line:
-            raise InvalidAddressFileException(u'Found }} in file: {}, line {}'.format(path, i+1))
-        phrases = line.split(u'|')
+        if '}' in line:
+            raise InvalidAddressFileException('Found }} in file: {}, line {}'.format(path, i+1))
+        phrases = line.split('|')
 
         if sum((1 for p in phrases if len(p.strip()) == 0)) > 0:
-            raise InvalidAddressFileException(u'Found blank synonym in: {}, line {}'.format(path, i+1))
+            raise InvalidAddressFileException('Found blank synonym in: {}, line {}'.format(path, i+1))
 
         yield phrases
 
 
 def quote_string(s):
-    return u'"{}"'.format(safe_decode(s).replace('\\', '\\\\').replace('"', '\\"'))
+    return '"{}"'.format(safe_decode(s).replace('\\', '\\\\').replace('"', '\\"'))
 
 
 class AddressPhraseDictionaries(object):
@@ -151,11 +151,11 @@ class AddressPhraseDictionaries(object):
 
             for filename in os.listdir(language_dir):
                 if not filename.endswith('.txt'):
-                    raise InvalidAddressFileException(u'Invalid extension for file {}/{}, must be .txt'.format(language_dir, filename))
+                    raise InvalidAddressFileException('Invalid extension for file {}/{}, must be .txt'.format(language_dir, filename))
                 dictionary_name = filename.split('.')[0].lower()
 
                 if dictionary_name not in gazetteer_types:
-                    raise InvalidAddressFileException(u'Invalid filename for file {}/{}. Must be one of {{{}}}'.format(language_dir, filename, ', '.join(sorted(gazetteer_types))))
+                    raise InvalidAddressFileException('Invalid filename for file {}/{}. Must be one of {{{}}}'.format(language_dir, filename, ', '.join(sorted(gazetteer_types))))
                 self.language_dictionaries[language].append(dictionary_name)
 
                 path = os.path.join(language_dir, filename)
@@ -164,12 +164,12 @@ class AddressPhraseDictionaries(object):
                     if not line.strip():
                         continue
 
-                    if u'}' in line:
-                        raise InvalidAddressFileException(u'Found }} in file: {}, line {}'.format(path, i+1))
-                    phrases = line.split(u'|')
+                    if '}' in line:
+                        raise InvalidAddressFileException('Found }} in file: {}, line {}'.format(path, i+1))
+                    phrases = line.split('|')
 
                     if sum((1 for p in phrases if len(p.strip()) == 0)) > 0:
-                        raise InvalidAddressFileException(u'Found blank synonym in: {}, line {}'.format(path, i+1))
+                        raise InvalidAddressFileException('Found blank synonym in: {}, line {}'.format(path, i+1))
 
                     self.phrases[(language, dictionary_name)].append(phrases)
 
@@ -211,7 +211,7 @@ def create_address_expansion_rules_file(base_dir=ADDRESS_EXPANSIONS_DIR, output_
                 for i, p in enumerate(phrases):
                     language_canonical_dictionaries[p, canonical_index if i > 0 else -1].append(dictionary_type)
 
-        for (phrase, canonical_index), dictionary_types in language_canonical_dictionaries.iteritems():
+        for (phrase, canonical_index), dictionary_types in list(language_canonical_dictionaries.items()):
             max_dictionary_types = max(max_dictionary_types, len(dictionary_types))
             rule_template = address_expansion_rule_template.format(phrase=quote_string(phrase),
                                                                    num_dictionaries=str(len(dictionary_types)),
@@ -232,11 +232,11 @@ def create_address_expansion_rules_file(base_dir=ADDRESS_EXPANSIONS_DIR, output_
     out.close()
 
     data_file = address_expansion_data_file_template.format(
-        canonical_strings=u''',
+        canonical_strings=''',
     '''.join(canonical_strings),
-        expansion_rules=u''',
+        expansion_rules=''',
     '''.join(expansion_rules),
-        address_languages=u''',
+        address_languages=''',
     '''.join(address_languages),
     )
 

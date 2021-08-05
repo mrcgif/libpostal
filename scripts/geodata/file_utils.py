@@ -22,6 +22,7 @@ def remove_file(filename):
 
 def ensure_dir(d):
     if not os.path.exists(d):
+        os.umask(0)
         os.makedirs(d)
 
 

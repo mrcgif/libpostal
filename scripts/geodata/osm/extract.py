@@ -10,6 +10,9 @@ import re
 import os
 import six
 import sys
+import time
+import urllib.request, urllib.parse, urllib.error
+from html.parser import HTMLParser
 
 from collections import OrderedDict
 from lxml import etree
@@ -60,13 +63,13 @@ def parse_osm(filename, allowed_types=ALL_OSM_TAGS, dependencies=False):
     ('node:4', OrderedDict([('lat', '12.34'), ('lon', '23.45')])),
     ('way:4444', OrderedDict([('name', 'Main Street')]), [1,2,3,4])
     '''
-    f = open(filename)
+    f = open(filename, 'rb')
     parser = etree.iterparse(f)
 
     single_type = len(allowed_types) == 1
 
     for (_, elem) in parser:
-        elem_id = long(elem.attrib.pop('id', 0))
+        elem_id = int(elem.attrib.pop('id', 0))
         item_type = elem.tag
         if elem_id >= WAY_OFFSET and elem_id < RELATION_OFFSET:
             elem_id -= WAY_OFFSET
@@ -90,10 +93,9 @@ def parse_osm(filename, allowed_types=ALL_OSM_TAGS, dependencies=False):
                     if key not in top_level_attrs:
                         attrs[key] = e.attrib['v']
                 elif dependencies and item_type == 'way' and e.tag == 'nd':
-                    deps.append(long(e.attrib['ref']))
+                    deps.append(int(e.attrib['ref']))
                 elif dependencies and item_type == 'relation' and e.tag == 'member' and 'role' in e.attrib:
-                    deps.append((long(e.attrib['ref']), e.attrib.get('type'), e.attrib['role']))
-
+                    deps.append((int(e.attrib['ref']), e.attrib.get('type'), e.attrib['role']))
             key = elem_id if single_type else '{}:{}'.format(item_type, elem_id)
             yield key, attrs, deps
 
@@ -104,7 +106,7 @@ def parse_osm(filename, allowed_types=ALL_OSM_TAGS, dependencies=False):
 
 
 def osm_type_and_id(element_id):
-    element_id = long(element_id)
+    element_id = int(element_id)
     if element_id >= RELATION_OFFSET:
         id_type = RELATION
         element_id -= RELATION_OFFSET
@@ -116,9 +118,9 @@ def osm_type_and_id(element_id):
 
     return id_type, element_id
 
-apposition_regex = re.compile('(.*[^\s])[\s]*\([\s]*(.*[^\s])[\s]*\)$', re.I)
+apposition_regex = re.compile(r'(.*[^\s])[\s]*\([\s]*(.*[^\s])[\s]*\)$', re.I)
 
-html_parser = HTMLParser.HTMLParser()
+html_parser = HTMLParser()
 
 
 def normalize_wikipedia_title(title):
@@ -128,26 +130,26 @@ def normalize_wikipedia_title(title):
 
     title = safe_decode(title)
     title = html_parser.unescape(title)
-    title = urllib.unquote_plus(title)
+    title = urllib.parse.unquote_plus(title)
 
-    return title.replace(u'_', u' ').strip()
+    return title.replace('_', ' ').strip()
 
 
 def osm_wikipedia_title_and_language(key, value):
     language = None
-    if u':' in key:
-        key, language = key.rsplit(u':', 1)
+    if ':' in key:
+        key, language = key.rsplit(':', 1)
 
-    if u':' in value:
-        possible_language = value.split(u':', 1)[0]
+    if ':' in value:
+        possible_language = value.split(':', 1)[0]
         if len(possible_language) == 2 and language is None:
             language = possible_language
-            value = value.rsplit(u':', 1)[-1]
+            value = value.rsplit(':', 1)[-1]
 
     return normalize_wikipedia_title(value), language
 
 
-non_breaking_dash = six.u('[-\u058a\u05be\u1400\u1806\u2010-\u2013\u2212\u2e17\u2e1a\ufe32\ufe63\uff0d]')
+non_breaking_dash = six.u('[-\\u058a\\u05be\\u1400\\u1806\\u2010-\\u2013\\u2212\\u2e17\\u2e1a\\ufe32\\ufe63\\uff0d]')
 simple_number = six.u('(?:{})?[0-9]+(?:\.[0-9]+)?').format(non_breaking_dash)
 simple_number_regex = re.compile(simple_number, re.UNICODE)
 
@@ -155,7 +157,7 @@ non_breaking_dash_regex = re.compile(non_breaking_dash, re.UNICODE)
 number_range_regex = re.compile(six.u('({}){}({})').format(simple_number, non_breaking_dash, simple_number), re.UNICODE)
 letter_range_regex = re.compile(r'([^\W\d_]){}([^\W\d_])'.format(non_breaking_dash.encode('unicode-escape')), re.UNICODE)
 
-number_split_regex = re.compile('[,;]')
+number_split_regex = re.compile(r'[,;]')
 
 
 def parse_osm_number_range(value, parse_letter_range=True, max_range=100):
@@ -181,7 +183,7 @@ def parse_osm_number_range(value, parse_letter_range=True, max_range=100):
                     if end_num - start_num > max_range:
                         end_num = start_num + max_range
 
-                    for i in xrange(start_num, end_num + 1):
+                    for i in range(start_num, end_num + 1):
                         numbers.append(safe_decode(i).zfill(zfill))
                 else:
                     numbers.append(val.strip().zfill(zfill))
@@ -199,10 +201,10 @@ def parse_osm_number_range(value, parse_letter_range=True, max_range=100):
                 if end_num > start_num:
                     if end_num - start_num > max_range:
                         end_num = start_num + max_range
-                    for i in xrange(start_num, end_num + 1):
-                        numbers.append(six.unichr(i))
+                    for i in range(start_num, end_num + 1):
+                        numbers.append(six.chr(i))
                 else:
-                    numbers.extend([six.unichr(start_num), six.unichr(end_num)])
+                    numbers.extend([six.chr(start_num), six.chr(end_num)])
                     continue
             else:
                 numbers.append(safe_decode(val.strip()))

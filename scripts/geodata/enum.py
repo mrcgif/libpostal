@@ -27,7 +27,7 @@ class EnumMeta(type):
     def __init__(self, name, bases, dict_):
         self.registry = self.registry.copy()
         self.name_registry = self.name_registry.copy()
-        for k, v in dict_.iteritems():
+        for k, v in list(dict_.items()):
             if isinstance(v, EnumValue) and v not in self.registry:
                 if v.name is None:
                     v.name = k
@@ -36,14 +36,13 @@ class EnumMeta(type):
         return super(EnumMeta, self).__init__(name, bases, dict_)
 
     def __iter__(self):
-        return self.registry.itervalues()
+        return iter(self.registry.values())
 
     def __getitem__(self, key):
         return self.registry[key]
 
 
-class Enum(object):
-    __metaclass__ = EnumMeta
+class Enum(object, metaclass=EnumMeta):
     registry = {}
     name_registry = {}
 

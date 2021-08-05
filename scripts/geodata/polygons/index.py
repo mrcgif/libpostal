@@ -17,6 +17,8 @@ from shapely.geometry.geo import mapping
 this_dir = os.path.realpath(os.path.dirname(__file__))
 sys.path.append(os.path.realpath(os.path.join(this_dir, os.pardir, os.pardir)))
 
+from geodata.encoding import safe_encode, safe_decode
+from geodata.file_utils import ensure_dir
 from geodata.polygons.area import polygon_bounding_box_area
 
 DEFAULT_POLYS_FILENAME = 'polygons.geojson'
@@ -39,6 +41,8 @@ class PolygonIndex(object):
                  polygons_db_path=None,
                  include_only_properties=None):
         if save_dir:
+            save_dir = os.path.abspath(save_dir)
+            ensure_dir(save_dir)
             self.save_dir = save_dir
         else:
             self.save_dir = None
@@ -116,15 +120,15 @@ class PolygonIndex(object):
 
     def add_polygon(self, poly, properties, cache=False, include_only_properties=None):
         if include_only_properties is not None:
-            properties = {k: v for k, v in properties.iteritems() if k in include_only_properties}
+            properties = {k: v for k, v in properties.items() if k in include_only_properties}
 
         if not self.persistent_polygons or cache:
             self.polygons[self.i] = prep(poly)
 
         if self.persistent_polygons:
-            self.polygons_db.Put(self.polygon_key(self.i), json.dumps(self.polygon_geojson(poly, properties)))
+            self.polygons_db.Put(self.polygon_key(self.i), safe_encode(json.dumps(self.polygon_geojson(poly, properties))))
 
-        self.polygons_db.Put(self.properties_key(self.i), json.dumps(properties))
+        self.polygons_db.Put(self.properties_key(self.i), safe_encode(json.dumps(properties)))
         self.index_polygon_properties(properties)
         self.i += 1
 
@@ -246,7 +250,7 @@ class PolygonIndex(object):
         return index
 
     def compact_polygons_db(self):
-        self.polygons_db.CompactRange('\x00', '\xff')
+        self.polygons_db.CompactRange(b'\x00', b'\xff')
 
     def save(self):
         self.save_index()
@@ -266,13 +270,13 @@ class PolygonIndex(object):
 
     def save_polygons(self, out_filename):
         out = open(out_filename, 'w')
-        for i in xrange(self.i):
+        for i in range(self.i):
             poly = self.polygons[i]
             feature = {
                 'type': 'Feature',
                 'geometry': mapping(poly.context),
             }
-            out.write(json.dumps(feature) + u'\n')
+            out.write(json.dumps(feature) + '\n')
 
     def save_index(self):
         raise NotImplementedError('Children must implement')
@@ -317,6 +321,7 @@ class PolygonIndex(object):
     def load(cls, d, index_name=None, polys_filename=DEFAULT_POLYS_FILENAME,
              properties_filename=DEFAULT_PROPS_FILENAME,
              polys_db_dir=POLYGONS_DB_DIR):
+        d = os.path.abspath(d)
         index = cls.load_index(d, index_name=index_name or cls.INDEX_FILENAME)
         if not cls.persistent_polygons:
             polys = cls.load_polygons(os.path.join(d, polys_filename))
@@ -332,7 +337,9 @@ class PolygonIndex(object):
         raise NotImplementedError('Children must implement')
 
     def get_properties(self, i):
-        return json.loads(self.polygons_db.Get(self.properties_key(i)))
+        key = self.properties_key(i)
+        poly_db = self.polygons_db.Get(key).decode('utf-8')
+        return json.loads(poly_db)
 
     def get_polygon(self, i):
         return self.polygons[i]
@@ -340,7 +347,9 @@ class PolygonIndex(object):
     def get_polygon_cached(self, i):
         poly = self.polygons.get(i, None)
         if poly is None:
-            data = json.loads(self.polygons_db.Get(self.polygon_key(i)))
+            key = self.polygon_key(i)
+            poly_db = self.polygons_db.Get(key).decode('utf-8')
+            data = json.loads(poly_db)
             poly = prep(self.polygon_from_geojson(data))
             self.polygons[i] = poly
             self.cache_misses += 1
@@ -349,7 +358,7 @@ class PolygonIndex(object):
         return poly
 
     def __iter__(self):
-        for i in xrange(self.i):
+        for i in range(self.i):
             yield self.get_properties(i), self.get_polygon(i)
 
     def __len__(self):
@@ -371,10 +380,10 @@ class PolygonIndex(object):
         return containing
 
     def polygon_key(self, i):
-        return 'poly:{}'.format(i)
+        return safe_encode('poly:{}'.format(i))
 
     def properties_key(self, i):
-        return 'props:{}'.format(i)
+        return safe_encode('props:{}'.format(i))
 
     def point_in_poly(self, lat, lon, return_all=False):
         candidates = self.get_candidate_polygons(lat, lon)

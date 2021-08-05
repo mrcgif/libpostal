@@ -13,21 +13,21 @@ from collections import defaultdict
 import re
 
 # Operate on WordBreakProperty.txt file
-hebrew_letter_regex = re.compile('^([^\s]+)[\s]+; Hebrew_Letter ')
-format_regex = re.compile('^([^\s]+)[\s]+; Format ')
-extend_regex = re.compile('^([^\s]+)[\s]+; Extend ')
-katakana_regex = re.compile('^([^\s]+)[\s]+; Katakana ')
-other_alpha_letter_regex = re.compile('^([^\s]+)[\s]+; ALetter # Lo (?!.*(?:HANGUL|TIBETAN|JAVANESE|BALINESE|YI) )')
-mid_letter_regex = re.compile('^([^\s]+)[\s]+; MidLetter')
-mid_number_regex = re.compile('^([^\s]+)[\s]+; MidNum ')
-mid_num_letter_regex = re.compile('^([^\s]+)[\s]+; MidNumLet ')
-numeric_regex = re.compile('^([^\s]+)[\s]+; Numeric ')
-extend_num_letter_regex = re.compile('^([^\s]+)[\s]+; ExtendNumLet ')
+hebrew_letter_regex = re.compile(r'^([^\s]+)[\s]+; Hebrew_Letter ')
+format_regex = re.compile(r'^([^\s]+)[\s]+; Format ')
+extend_regex = re.compile(r'^([^\s]+)[\s]+; Extend ')
+katakana_regex = re.compile(r'^([^\s]+)[\s]+; Katakana ')
+other_alpha_letter_regex = re.compile(r'^([^\s]+)[\s]+; ALetter # Lo (?!.*(?:HANGUL|TIBETAN|JAVANESE|BALINESE|YI) )')
+mid_letter_regex = re.compile(r'^([^\s]+)[\s]+; MidLetter')
+mid_number_regex = re.compile(r'^([^\s]+)[\s]+; MidNum ')
+mid_num_letter_regex = re.compile(r'^([^\s]+)[\s]+; MidNumLet ')
+numeric_regex = re.compile(r'^([^\s]+)[\s]+; Numeric ')
+extend_num_letter_regex = re.compile(r'^([^\s]+)[\s]+; ExtendNumLet ')
 
 # Operate on Scripts.txt file
-other_number_regex = re.compile('^([^\s]+)[\s]+; ExtendNumLet ')
+other_number_regex = re.compile(r'^([^\s]+)[\s]+; ExtendNumLet ')
 
-script_regex = re.compile('([^\s]+)[\s]+;[\s]*([^\s]+)[\s]*#[\s]*([^\s]+)')
+script_regex = re.compile(r'([^\s]+)[\s]+;[\s]*([^\s]+)[\s]*#[\s]*([^\s]+)')
 
 WORD_BREAK_PROPERTIES_URL = 'http://www.unicode.org/Public/UCD/latest/ucd/auxiliary/WordBreakProperty.txt'
 HANGUL_SYLLABLE_TYPES_URL = 'http://www.unicode.org/Public/UCD/latest/ucd/HangulSyllableType.txt'
@@ -49,7 +49,7 @@ ideographic_scripts = set([
 def regex_char_range(match):
     r = match.split('..')
     # Wide version
-    return u'-'.join([('\u{}'.format(c.lower()) if len(c) < 5 else '\U{}'.format(c.lower().rjust(8, '0'))) for c in r])
+    return '-'.join([(r'\u{}'.format(c.lower()) if len(c) < 5 else r'\U{}'.format(c.lower().rjust(8, '0'))) for c in r])
 
 
 def get_letter_range(text, *regexes):
@@ -78,7 +78,7 @@ def get_char_class(text, char_class_regex):
     return char_ranges
 
 
-hangul_syllable_type_regex = re.compile('^([^\s]+)[\s]+; ([A-Z]+)')
+hangul_syllable_type_regex = re.compile(r'^([^\s]+)[\s]+; ([A-Z]+)')
 
 
 def get_hangul_syllable_ranges(text):
@@ -106,8 +106,8 @@ name_funcs = [
 IDEOGRAPHIC_CHARS = 'ideographic_chars'
 IDEOGRAPHIC_NUMERIC_CHARS = 'ideographic_numeric_chars'
 
-numbers_regex = re.compile('N[ol]', re.I)
-letters_regex = re.compile('L*', re.I)
+numbers_regex = re.compile(r'N[ol]', re.I)
+letters_regex = re.compile(r'L*', re.I)
 
 
 def main():
@@ -117,23 +117,23 @@ def main():
     if response.ok:
         for name, reg in name_funcs:
             s = get_letter_range(response.content, reg)
-            print '{} = [{}];'.format(name, ''.join(s))
+            print('{} = [{}];'.format(name, ''.join(s)))
 
     response = requests.get(HANGUL_SYLLABLE_TYPES_URL)
 
     if response.ok:
         syllable_ranges = get_hangul_syllable_ranges(response.content)
-        for name, ranges in syllable_ranges.iteritems():
-            print 'hangul_syllable_class_{} = [{}];'.format(name, u''.join(ranges))
+        for name, ranges in syllable_ranges.items():
+            print('hangul_syllable_class_{} = [{}];'.format(name, ''.join(ranges)))
 
     response = requests.get(SCRIPTS_URL)
     if response.ok:
         s = ''.join(get_char_class(response.content, numbers_regex))
 
-        print '{} = [{}];'.format(IDEOGRAPHIC_NUMERIC_CHARS, ''.join(s))
+        print('{} = [{}];'.format(IDEOGRAPHIC_NUMERIC_CHARS, ''.join(s)))
 
         s = ''.join(get_letter_ranges_for_scripts(response.content, ideographic_scripts, letters_regex))
-        print '{} = [{}];'.format(IDEOGRAPHIC_CHARS, ''.join(s))
+        print('{} = [{}];'.format(IDEOGRAPHIC_CHARS, ''.join(s)))
 
 
 if __name__ == '__main__':

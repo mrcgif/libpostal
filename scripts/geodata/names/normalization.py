@@ -31,7 +31,7 @@ class NameAffixes(object):
                 continue
             lang = filename.rsplit('.yaml')[0]
 
-            conf = yaml.load(open(os.path.join(config_dir, filename)))
+            conf = yaml.load(open(os.path.join(config_dir, filename)), Loader=yaml.FullLoader)
             self.add_affixes(lang, conf)
 
             for country, country_conf in six.iteritems(conf.get('countries', {})):

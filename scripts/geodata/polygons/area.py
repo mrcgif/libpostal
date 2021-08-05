@@ -7,13 +7,15 @@ from shapely.geometry import Polygon
 
 def polygon_area(poly):
     return transform(
-        partial(pyproj.transform,
-                pyproj.Proj(init='EPSG:4326'),
-                pyproj.Proj(proj='aea',
-                            lat1=poly.bounds[1],
-                            lat2=poly.bounds[2],
-                            )
-                ),
+        partial(
+            pyproj.transform,
+            pyproj.Proj('EPSG:4326'),
+            pyproj.Proj(
+                proj='aea',
+                lat_1=poly.bounds[1],
+                lat_2=poly.bounds[3]
+            )
+        ),
         poly
     ).area
 

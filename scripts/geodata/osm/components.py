@@ -71,19 +71,22 @@ class OSMAddressComponents(object):
                 continue
 
             country_code = filename.rsplit('.yaml', 1)[0]
-            data = yaml.load(open(os.path.join(boundaries_dir, filename)))
+            data = yaml.load(
+                open(os.path.join(boundaries_dir, filename)), Loader=yaml.FullLoader)
 
             for prop, values in six.iteritems(data):
                 if not hasattr(values, 'items'):
                     # non-dict key
                     continue
 
-                for k, v in values.iteritems():
+                for k, v in values.items():
                     if isinstance(v, six.string_types) and v not in AddressFormatter.address_formatter_fields:
-                        raise ValueError(u'Invalid value in {} for prop={}, key={}: {}'.format(filename, prop, k, v))
+                        raise ValueError(
+                            'Invalid value in {} for prop={}, key={}: {}'.format(filename, prop, k, v))
 
                 if prop == 'overrides':
-                    self.use_admin_center.update({(r['type'], safe_encode(r['id'])): r.get('probability', 1.0) for r in values.get('use_admin_center', [])})
+                    self.use_admin_center.update({(r['type'], safe_encode(r['id'])): r.get(
+                        'probability', 1.0) for r in values.get('use_admin_center', [])})
 
                     containing_overrides = values.get('contained_by', {})
 
@@ -127,7 +130,7 @@ class OSMAddressComponents(object):
             element_id = properties.get('id')
 
             override_value = id_overrides.get(element_type, {})
-            element_id = six.binary_type(element_id or '')
+            element_id = safe_encode(element_id or '')
             if element_id in override_value:
                 return override_value[element_id]
 
@@ -135,25 +138,29 @@ class OSMAddressComponents(object):
             if contained_by_overrides and containing:
                 # Note, containing should be passed in from smallest to largest
                 for containing_type, containing_id in containing:
-                    override_config = contained_by_overrides.get(containing_type, {}).get(six.binary_type(containing_id or ''), None)
+                    override_config = contained_by_overrides.get(containing_type, {}).get(
+                        safe_encode(containing_id or ''), None)
                     if override_config:
                         config = override_config
                         break
 
-        values = [(k.lower(), v.lower()) for k, v in six.iteritems(properties) if isinstance(v, six.string_types)]
+        values = [(k.lower(), v.lower()) for k, v in six.iteritems(
+            properties) if isinstance(v, six.string_types)]
 
         global_overrides_last = config.get('global_overrides_last', False)
 
         # place=city, place=suburb, etc. override per-country boundaries
         if not global_overrides_last:
             for k, v in values:
-                containing_component = self.global_keys_override.get(k, {}).get(v, DoesNotExist)
+                containing_component = self.global_keys_override.get(
+                    k, {}).get(v, DoesNotExist)
 
                 if containing_component is not DoesNotExist:
                     return containing_component
 
                 if k != self.ADMIN_LEVEL and k in config:
-                    containing_component = config.get(k, {}).get(v, DoesNotExist)
+                    containing_component = config.get(
+                        k, {}).get(v, DoesNotExist)
                     if containing_component is not DoesNotExist:
                         return containing_component
 
@@ -167,18 +174,21 @@ class OSMAddressComponents(object):
         # other place keys like place=state, etc. serve as a backup
         # when no admin_level tags are available
         for k, v in values:
-            containing_component = self.global_keys.get(k, {}).get(v, DoesNotExist)
+            containing_component = self.global_keys.get(
+                k, {}).get(v, DoesNotExist)
 
             if containing_component is not DoesNotExist:
                 return containing_component
 
         if global_overrides_last:
             for k, v in values:
-                containing_component = self.global_keys_override.get(k, {}).get(v, DoesNotExist)
+                containing_component = self.global_keys_override.get(
+                    k, {}).get(v, DoesNotExist)
 
                 if containing_component is not DoesNotExist:
                     return containing_component
 
         return None
+
 
 osm_address_components = OSMAddressComponents()

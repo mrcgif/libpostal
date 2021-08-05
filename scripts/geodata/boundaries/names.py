@@ -27,7 +27,7 @@ class BoundaryNames(object):
     DEFAULT_NAME_KEY = 'name'
 
     def __init__(self, config_file=BOUNDARY_NAMES_CONFIG):
-        config = yaml.load(open(config_file))
+        config = yaml.load(open(config_file), Loader=yaml.FullLoader)
 
         default_names = nested_get(config, ('names', 'keys'))
         name_keys, probs = alternative_probabilities(default_names)

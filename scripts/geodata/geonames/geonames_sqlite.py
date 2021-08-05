@@ -1,42 +1,37 @@
+import argparse
+import csv
+import logging
 import os
 import shutil
 import sqlite3
-
-import tempfile
-import urlparse
-import urllib2
 import subprocess
-
-import logging
-
-import argparse
-
-import csv
 import sys
+import tempfile
+import urllib.error
+import urllib.parse
+import urllib.request
 
 this_dir = os.path.realpath(os.path.dirname(__file__))
 sys.path.append(os.path.realpath(os.path.join(this_dir, os.pardir, os.pardir)))
 
+from itertools import chain, islice
 
 from geodata.encoding import safe_decode
-from geodata.geonames.paths import *
-
 from geodata.file_utils import *
+from geodata.geonames.paths import *
 from geodata.log import *
-
-from itertools import islice, chain
 
 log_to_file(sys.stderr)
 logger = logging.getLogger('geonames.sqlite')
 
 BASE_URL = 'http://download.geonames.org/export/'
 
-DUMP_URL = urlparse.urljoin(BASE_URL, 'dump/')
+DUMP_URL = urllib.parse.urljoin(BASE_URL, 'dump/')
 ALL_COUNTRIES_ZIP_FILE = 'allCountries.zip'
 HIERARCHY_ZIP_FILE = 'hierarchy.zip'
 ALTERNATE_NAMES_ZIP_FILE = 'alternateNames.zip'
 
-ZIP_URL = urlparse.urljoin(BASE_URL, 'zip/')
+ZIP_URL = urllib.parse.urljoin(BASE_URL, 'zip/')
 
 GEONAMES_DUMP_FILES = (ALL_COUNTRIES_ZIP_FILE,
                        HIERARCHY_ZIP_FILE,
@@ -60,7 +55,7 @@ def download_file(url, dest):
 def admin_ddl(admin_level):
     columns = ['country_code TEXT'] + \
               ['admin{}_code TEXT'.format(i)
-               for i in xrange(1, admin_level)]
+               for i in range(1, admin_level)]
 
     create = '''
     CREATE TABLE admin{level}_codes (
@@ -265,7 +260,7 @@ def populate_admin_table(conn, admin_level):
                'name',
                'country_code']
     columns.extend(['admin{}_code'.format(i)
-                    for i in xrange(1, admin_level)])
+                    for i in range(1, admin_level)])
 
     admin_insert_statement = '''
     insert into "admin{}_codes"
@@ -299,7 +294,7 @@ def create_geonames_sqlite_db(temp_dir, db_file=DEFAULT_GEONAMES_DB_PATH):
     for url, directory, is_gzipped, filename in GEONAMES_FILES:
         table = geonames_file_table_map[(directory, filename)]
         create_table(conn, table)
-        full_url = urlparse.urljoin(url, filename)
+        full_url = urllib.parse.urljoin(url, filename)
         dest_dir = os.path.join(temp_dir, directory)
         ensure_dir(dest_dir)
         dest_file = os.path.join(dest_dir, filename)
@@ -308,14 +303,14 @@ def create_geonames_sqlite_db(temp_dir, db_file=DEFAULT_GEONAMES_DB_PATH):
             unzip_file(dest_file, dest_dir)
             filename = dest_file.replace('.zip', '.txt')
         reader = csv.reader(open(filename), delimiter='\t', quotechar=None)
-        lines = (map(safe_decode, line) for line in reader)
+        lines = (list(map(safe_decode, line)) for line in reader)
         import_geonames_table(conn, table, lines)
     logging.info('Creating countries tables')
     for statement in country_table_create_statements:
         conn.execute(statement)
         conn.commit()
     logging.info('Creating admin tables')
-    for admin_level in xrange(1, 5):
+    for admin_level in range(1, 5):
         create_table(conn, 'admin{}_codes'.format(admin_level))
         populate_admin_table(conn, admin_level)
     conn.close()

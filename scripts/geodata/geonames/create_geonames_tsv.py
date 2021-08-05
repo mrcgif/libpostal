@@ -28,30 +28,28 @@ import re
 import sqlite3
 import subprocess
 import sys
+import unicodedata
+import urllib.error
+import urllib.parse
+import urllib.request
+from collections import OrderedDict, defaultdict
 
 import pycountry
-
-import unicodedata
-
-import urllib
-import urlparse
-
-from collections import defaultdict, OrderedDict
 from lxml import etree
 
 this_dir = os.path.realpath(os.path.dirname(__file__))
 sys.path.append(os.path.realpath(os.path.join(this_dir, os.pardir, os.pardir)))
 
-from geodata.csv_utils import *
-from geodata.file_utils import *
 from geodata.countries.country_names import *
-from geodata.encoding import safe_encode, safe_decode
+from geodata.csv_utils import *
+from geodata.encoding import safe_decode, safe_encode
+from geodata.file_utils import *
 from geodata.geonames.paths import DEFAULT_GEONAMES_DB_PATH
 from geodata.i18n.languages import *
 from geodata.i18n.unicode_paths import CLDR_DIR
 from geodata.log import log_to_file
 
-multispace_regex = re.compile('[\s]+')
+multispace_regex = re.compile(r'[\s]+')
 
 
 def encode_field(value):
@@ -293,19 +291,19 @@ order by alternate_name, is_preferred_name
 BATCH_SIZE = 2000
 
 
-wiki_paren_regex = re.compile('(.*)[\s]*\(.*?\)[\s]*')
+wiki_paren_regex = re.compile(r'(.*)[\s]*\(.*?\)[\s]*')
 
 
 def normalize_wikipedia_title(title):
-    return safe_decode(title).replace(u'_', u' ')
+    return safe_decode(title).replace('_', ' ')
 
 
 def normalize_wikipedia_url(url):
-    url = urllib.unquote_plus(url)
+    url = urllib.parse.unquote_plus(url)
 
-    parsed = urlparse.urlsplit(url)
+    parsed = urllib.parse.urlsplit(url)
     if parsed.query:
-        params = urlparse.parse_qs(parsed.query)
+        params = urllib.parse.parse_qs(parsed.query)
         if 'title' in params:
             return normalize_wikipedia_title(params['title'][0])
 
@@ -380,7 +378,7 @@ def create_geonames_tsv(db, out_dir=DEFAULT_DATA_DIR):
     logging.info('Fetched Wikipedia titles')
 
     # Iterate over GeoNames boundary types from largest (country) to smallest (neighborhood)
-    for boundary_type, codes in geonames_admin_dictionaries.iteritems():
+    for boundary_type, codes in geonames_admin_dictionaries.items():
         if boundary_type != boundary_types.COUNTRY:
             predicate = 'where gn.feature_code in ({codes})'.format(
                 codes=','.join(['"{}"'.format(c) for c in codes])
@@ -496,7 +494,7 @@ def create_geonames_tsv(db, out_dir=DEFAULT_DATA_DIR):
                 if have_wikipedia:
                     wiki_row = row[:]
                     wiki_row[DUMMY_HAS_WIKIPEDIA_ENTRY_INDEX] = wiki_preferred + 1
-                    rows.append(map(encode_field, wiki_row))
+                    rows.append(list(map(encode_field, wiki_row)))
 
                 canonical = utf8_normalize(safe_decode(row[CANONICAL_NAME_INDEX]))
                 row[POPULATION_INDEX] = int(row[POPULATION_INDEX] or 0)
@@ -510,10 +508,10 @@ def create_geonames_tsv(db, out_dir=DEFAULT_DATA_DIR):
                     if canonical_row_name != name:
                         canonical_row[NAME_INDEX] = safe_encode(canonical_row_name)
                         have_normalized = True
-                        rows.append(map(encode_field, canonical_row))
+                        rows.append(list(map(encode_field, canonical_row)))
 
                 if not have_wikipedia:
-                    rows.append(map(encode_field, row))
+                    rows.append(list(map(encode_field, row)))
 
                 # Country names have more specialized logic
                 if boundary_type == boundary_types.COUNTRY:
@@ -545,23 +543,23 @@ def create_geonames_tsv(db, out_dir=DEFAULT_DATA_DIR):
                             canonical_row[DUMMY_HAS_WIKIPEDIA_ENTRY_INDEX] = wiki_preferred + 1
 
                         if (name != canonical):
-                            rows.append(map(encode_field, canonical_row))
+                            rows.append(list(map(encode_field, canonical_row)))
 
                     if canonical_row_name != canonical and canonical_row_name != name:
                         canonical_row[NAME_INDEX] = safe_encode(canonical_row_name)
-                        rows.append(map(encode_field, canonical_row))
+                        rows.append(list(map(encode_field, canonical_row)))
 
                     if alpha2_code and is_orig_name:
                         alpha2_row = row[:]
                         alpha2_row[NAME_INDEX] = alpha2_code
                         alpha2_row[DUMMY_LANGUAGE_PRIORITY_INDEX] = 10
-                        rows.append(map(encode_field, alpha2_row))
+                        rows.append(list(map(encode_field, alpha2_row)))
 
                     if alpha2_code.lower() in country_alpha3_map and is_orig_name:
                         alpha3_row = row[:]
                         alpha3_row[NAME_INDEX] = country_code_alpha3_map[alpha2_code.lower()]
                         alpha3_row[DUMMY_LANGUAGE_PRIORITY_INDEX] = 10
-                        rows.append(map(encode_field, alpha3_row))
+                        rows.append(list(map(encode_field, alpha3_row)))
 
             writer.writerows(rows)
             logging.info('Did {} batches'.format(i))
@@ -617,7 +615,7 @@ def create_postal_codes_tsv(db, out_dir=DEFAULT_DATA_DIR):
         if not batch:
             break
         rows = [
-            map(encode_field, row)
+            list(map(encode_field, row))
             for row in batch
         ]
         writer.writerows(rows)

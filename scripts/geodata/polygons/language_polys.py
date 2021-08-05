@@ -94,14 +94,14 @@ class LanguagePolygonIndex(RTreePolygonIndex):
                     if not regional:
                         continue
 
-                    if all((not default for lang, default in regional.iteritems())):
+                    if all((not default for lang, default in regional.items())):
                         languages = get_country_languages(country)
                         languages.update(regional)
-                        languages = languages.items()
+                        languages = list(languages.items())
                     else:
-                        languages = regional.items()
+                        languages = list(regional.items())
                 else:
-                    languages = get_country_languages(country).items()
+                    languages = list(get_country_languages(country).items())
 
                 properties['languages'] = [{'lang': lang, 'default': default}
                                            for lang, default in languages]
@@ -157,7 +157,7 @@ class LanguagePolygonIndex(RTreePolygonIndex):
         return self.admin_levels[i]
 
     def get_candidate_polygons(self, lat, lon):
-        candidates = OrderedDict.fromkeys(self.index.intersection((lon, lat, lon, lat))).keys()
+        candidates = list(OrderedDict.fromkeys(self.index.intersection((lon, lat, lon, lat))).keys())
         return sorted(candidates, key=self.admin_level, reverse=True)
 
     def country_and_languages(self, latitude, longitude):

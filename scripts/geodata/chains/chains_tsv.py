@@ -46,7 +46,7 @@ class VenueNames(object):
             self.names_cap[name.lower()][name] += 1
 
             if i % 1000 == 0 and i > 0:
-                print 'did', i
+                print('did ', i)
             i += 1
 
     def write_to_tsv(self, out_filename, min_threshold=5):

@@ -42,13 +42,13 @@ import random
 import re
 import sys
 import tempfile
-import urllib
+import urllib.request, urllib.parse, urllib.error
 import ujson as json
-import HTMLParser
+from html.parser import HTMLParser
 
 from collections import defaultdict, OrderedDict
 from lxml import etree
-from itertools import ifilter, chain, combinations
+from itertools import chain, combinations
 
 from shapely.geos import LOG as shapely_geos_logger
 shapely_geos_logger.setLevel(logging.CRITICAL)
@@ -70,8 +70,6 @@ from geodata.osm.formatter import OSMAddressFormatter
 from geodata.places.reverse_geocode import PlaceReverseGeocoder
 from geodata.polygons.language_polys import *
 from geodata.polygons.reverse_geocode import *
-from geodata.i18n.unicode_paths import DATA_DIR
-
 from geodata.csv_utils import *
 from geodata.file_utils import *
 
@@ -85,6 +83,7 @@ PLANET_BORDERS_INPUT_FILE = 'planet-borders.osm'
 WAYS_LANGUAGE_DATA_FILENAME = 'streets_by_language.tsv'
 ADDRESS_LANGUAGE_DATA_FILENAME = 'address_streets_by_language.tsv'
 TOPONYM_LANGUAGE_DATA_FILENAME = 'toponyms_by_language.tsv'
+VENUE_LANGUAGE_DATA_FILENAME = 'names_by_language.tsv'
 
 
 def normalize_osm_name_tag(tag, script=False):
@@ -120,7 +119,7 @@ def get_language_names(country_rtree, key, value, tag_prefix='name'):
     alternate_langs = []
 
     equivalent_alternatives = defaultdict(list)
-    for k, v in value.iteritems():
+    for k, v in value.items():
         if k.startswith(tag_prefix + ':') and normalize_osm_name_tag(k, script=True) in languages:
             lang = k.rsplit(':', 1)[-1]
             alternate_langs.append((lang, v))
@@ -129,7 +128,7 @@ def get_language_names(country_rtree, key, value, tag_prefix='name'):
     has_alternate_names = len(alternate_langs)
     # Some countries like Lebanon list things like name:en == name:fr == "Rue Abdel Hamid Karame"
     # Those addresses should be disambiguated rather than taken for granted
-    ambiguous_alternatives = set([k for k, v in equivalent_alternatives.iteritems() if len(v) > 1])
+    ambiguous_alternatives = set([k for k, v in equivalent_alternatives.items() if len(v) > 1])
 
     regional_defaults = 0
     country_defaults = 0
@@ -146,7 +145,7 @@ def get_language_names(country_rtree, key, value, tag_prefix='name'):
 
     ambiguous_already_seen = set()
 
-    for k, v in value.iteritems():
+    for k, v in value.items():
         if k.startswith(tag_prefix + ':'):
             if v not in ambiguous_alternatives:
                 norm = normalize_osm_name_tag(k)
@@ -194,7 +193,7 @@ def build_ways_training_data(country_rtree, infile, out_dir, abbreviate_streets=
     ar      ma      ﺵﺍﺮﻋ ﻑﺎﻟ ﻮﻟﺩ ﻊﻤﻳﺭ
     '''
     i = 0
-    f = open(os.path.join(out_dir, WAYS_LANGUAGE_DATA_FILENAME), 'w')
+    f = open(os.path.join(out_dir, WAYS_LANGUAGE_DATA_FILENAME), 'w+')
     writer = csv.writer(f, 'tsv_no_quote')
 
     for key, value, deps in parse_osm(infile, allowed_types=WAYS_RELATIONS):
@@ -202,7 +201,7 @@ def build_ways_training_data(country_rtree, infile, out_dir, abbreviate_streets=
         if not name_language:
             continue
 
-        for lang, val in name_language.iteritems():
+        for lang, val in name_language.items():
             for v in val:
                 for s in v.split(';'):
                     if lang in languages:
@@ -261,11 +260,11 @@ def build_toponym_training_data(country_rtree, infile, out_dir):
     ja      jp      東京都
     '''
     i = 0
-    f = open(os.path.join(out_dir, TOPONYM_LANGUAGE_DATA_FILENAME), 'w')
+    f = open(os.path.join(out_dir, TOPONYM_LANGUAGE_DATA_FILENAME), 'w+')
     writer = csv.writer(f, 'tsv_no_quote')
 
     for key, value, deps in parse_osm(infile):
-        if not any((k.startswith('name') for k, v in value.iteritems())):
+        if not any((k.startswith('name') for k, v in value.items())):
             continue
 
         try:
@@ -283,13 +282,13 @@ def build_toponym_training_data(country_rtree, infile, out_dir):
 
         official = official_languages[country]
 
-        default_langs = set([l for l, default in official.iteritems() if default])
+        default_langs = set([l for l, default in official.items() if default])
 
         _, regional_langs = country_rtree.country_and_languages_from_components([c for c in osm_country_components if 'ISO3166-1:alpha2' not in c])
 
         top_lang = None
         if len(official) > 0:
-            top_lang = official.iterkeys().next()
+            top_lang = next(iter(official.keys()))
 
         # E.g. Hindi in India, Urdu in Pakistan
         if top_lang is not None and top_lang not in WELL_REPRESENTED_LANGUAGES and len(default_langs) > 1:
@@ -313,7 +312,7 @@ def build_toponym_training_data(country_rtree, infile, out_dir):
 
         have_qualified_names = False
 
-        for k, v in value.iteritems():
+        for k, v in value.items():
             if not k.startswith('name:'):
                 continue
 
@@ -334,7 +333,7 @@ def build_toponym_training_data(country_rtree, infile, out_dir):
         if not have_qualified_names and len(regional_langs) <= 1 and 'name' in value and len(valid_languages) == 1:
             name_language[top_lang].append(value['name'])
 
-        for k, v in name_language.iteritems():
+        for k, v in name_language.items():
             for s in v:
                 s = s.strip()
                 if not s:
@@ -357,7 +356,7 @@ def build_address_training_data(country_rtree, infile, out_dir, format=False):
     eu      es      Errebal kalea
     '''
     i = 0
-    f = open(os.path.join(out_dir, ADDRESS_LANGUAGE_DATA_FILENAME), 'w')
+    f = open(os.path.join(out_dir, ADDRESS_LANGUAGE_DATA_FILENAME), 'w+')
     writer = csv.writer(f, 'tsv_no_quote')
 
     for key, value, deps in parse_osm(infile):
@@ -365,7 +364,7 @@ def build_address_training_data(country_rtree, infile, out_dir, format=False):
         if not street_language:
             continue
 
-        for k, v in street_language.iteritems():
+        for k, v in street_language.items():
             for s in v:
                 s = s.strip()
                 if not s:
@@ -378,13 +377,11 @@ def build_address_training_data(country_rtree, infile, out_dir, format=False):
 
     f.close()
 
-VENUE_LANGUAGE_DATA_FILENAME = 'names_by_language.tsv'
-
 
 def build_venue_training_data(country_rtree, infile, out_dir):
     i = 0
 
-    f = open(os.path.join(out_dir, VENUE_LANGUAGE_DATA_FILENAME), 'w')
+    f = open(os.path.join(out_dir, VENUE_LANGUAGE_DATA_FILENAME), 'w+')
     writer = csv.writer(f, 'tsv_no_quote')
 
     for key, value, deps in parse_osm(infile):
@@ -393,23 +390,23 @@ def build_venue_training_data(country_rtree, infile, out_dir):
             continue
 
         venue_type = None
-        for key in (u'amenity', u'building'):
-            amenity = value.get(key, u'').strip()
+        for key in ('amenity', 'building'):
+            amenity = value.get(key, '').strip()
             if amenity in ('yes', 'y'):
                 continue
 
             if amenity:
-                venue_type = u':'.join([key, amenity])
+                venue_type = ':'.join([key, amenity])
                 break
 
         if venue_type is None:
             continue
 
-        for k, v in name_language.iteritems():
+        for k, v in name_language.items():
             for s in v:
                 s = s.strip()
                 if k in languages:
-                    writer.writerow((k, country, safe_encode(venue_type), tsv_string(s)))
+                    writer.writerow((k, country, venue_type, tsv_string(s)))
             if i % 1000 == 0 and i > 0:
                 print('did, {} venues'.format(i))
             i += 1

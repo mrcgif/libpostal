@@ -12,9 +12,9 @@ from geodata.graph.topsort import topsort
 
 DEFAULT_SCRIPT_PATH = os.path.join(this_dir, 'fetch_osm_address_data.sh')
 
-valid_key_regex = re.compile('VALID_(.*?)_KEYS="(.*)"')
+valid_key_regex = re.compile(r'VALID_(.*?)_KEYS="(.*)"')
 variable_regex = re.compile(r'\$VALID_(.*?)_KEYS(?=\b)')
-kv_regex = re.compile('([^\s]*)=([^\s]*)')
+kv_regex = re.compile(r'([^\s]*)=([^\s]*)')
 
 
 class OSMDefinitions(object):

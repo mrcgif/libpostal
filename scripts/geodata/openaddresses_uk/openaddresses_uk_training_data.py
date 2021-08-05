@@ -83,11 +83,11 @@ class OpenAddressesUKFormatter(object):
 
     def formatted_addresses(self, path, tag_components=True):
         country = Countries.UNITED_KINGDOM
-        candidate_languages = get_country_languages(country).items()
+        candidate_languages = list(get_country_languages(country).items())
 
         f = open(path)
         reader = unicode_csv_reader(f)
-        headers = reader.next()
+        headers = next(reader)
 
         header_indices = {i: self.field_map[k] for i, k in enumerate(headers) if k in self.field_map}
 

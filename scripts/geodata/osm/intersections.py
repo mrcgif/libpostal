@@ -9,7 +9,7 @@ import ujson as json
 
 from bisect import bisect_left
 from leveldb import LevelDB
-from itertools import izip, groupby
+from itertools import groupby
 
 this_dir = os.path.realpath(os.path.dirname(__file__))
 sys.path.append(os.path.realpath(os.path.join(this_dir, os.pardir, os.pardir)))
@@ -64,7 +64,7 @@ class OSMIntersectionReader(object):
         for element_id, props, deps in parse_osm(self.filename, dependencies=True):
             props = {safe_decode(k): safe_decode(v) for k, v in six.iteritems(props)}
             if element_id.startswith('node'):
-                node_id = long(element_id.split(':')[-1])
+                node_id = int(element_id.split(':')[-1])
                 node_ids.append(node_id)
                 node_counts.append(0)
                 self.node_props.Put(safe_encode(node_id), json.dumps(props))
@@ -97,11 +97,11 @@ class OSMIntersectionReader(object):
 
         for element_id, props, deps in parse_osm(self.filename, dependencies=True):
             if element_id.startswith('node'):
-                node_id = long(element_id.split(':')[-1])
+                node_id = int(element_id.split(':')[-1])
                 node_index = self.binary_search(self.node_ids, node_id)
             elif element_id.startswith('way'):
                 props = {safe_decode(k): safe_decode(v) for k, v in six.iteritems(props)}
-                way_id = long(element_id.split(':')[-1])
+                way_id = int(element_id.split(':')[-1])
                 props['id'] = way_id
                 for node_id in deps:
                     node_index = self.binary_search(self.node_ids, node_id)

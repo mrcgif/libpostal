@@ -111,7 +111,7 @@ def disambiguate_language(text, languages, scripts_only=False):
     if language_script is not UNKNOWN_LANGUAGE:
         return language_script
 
-    num_defaults = sum((1 for lang, default in valid_languages.iteritems() if default))
+    num_defaults = sum((1 for lang, default in valid_languages.items() if default))
 
     tokens = normalized_tokens(text)
 
@@ -123,7 +123,7 @@ def disambiguate_language(text, languages, scripts_only=False):
     for t, c, l, data in street_types_gazetteer.filter(tokens):
         if c == token_types.PHRASE:
             valid = OrderedDict()
-            data = [safe_decode(d).split(u'|') for d in data]
+            data = [safe_decode(d).split('|') for d in data]
             potentials = set([l for l, d, i, c in data if l in valid_languages])
             potential_defaults = set([l for l in potentials if valid_languages[l]])
 
@@ -150,7 +150,7 @@ def disambiguate_language(text, languages, scripts_only=False):
                (not any((valid_languages.get(l) for l in valid)) or any((valid_languages.get(l) for l in seen_languages))):
                 return AMBIGUOUS_LANGUAGE
 
-            valid = valid.keys()
+            valid = list(valid.keys())
 
             if len(valid) == 1:
                 current_lang = valid[0]
@@ -161,7 +161,7 @@ def disambiguate_language(text, languages, scripts_only=False):
                 elif len(valid_default) == 1:
                     current_lang = valid_default[0]
 
-            if any((current_lang not in langs for script, langs in script_langs.iteritems())):
+            if any((current_lang not in langs for script, langs in script_langs.items())):
                 return AMBIGUOUS_LANGUAGE
 
             seen_languages.update(valid)
@@ -169,7 +169,7 @@ def disambiguate_language(text, languages, scripts_only=False):
     if current_lang is not None:
         return current_lang
     elif possible_lang is not None:
-        if not any((possible_lang not in langs for script, langs in script_langs.iteritems())):
+        if not any((possible_lang not in langs for script, langs in script_langs.items())):
             return possible_lang
         else:
             return AMBIGUOUS_LANGUAGE

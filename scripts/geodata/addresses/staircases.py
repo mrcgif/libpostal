@@ -21,7 +21,7 @@ from geodata.math.sampling import weighted_choice, zipfian_distribution, cdf
 class Staircase(NumberedComponent):
     max_staircases = 10
 
-    staircase_range = range(1, max_staircases + 1)
+    staircase_range = list(range(1, max_staircases + 1))
     staircase_range_probs = zipfian_distribution(len(staircase_range), 2.0)
     staircase_range_cdf = cdf(staircase_range_probs)
 
@@ -37,7 +37,7 @@ class Staircase(NumberedComponent):
         elif num_type == cls.HYPHENATED_NUMBER:
             number = weighted_choice(cls.staircase_range, cls.staircase_range_cdf)
             number2 = number + weighted_choice(cls.staircase_range, cls.staircase_range_cdf)
-            return u'{}-{}'.format(number, number2)
+            return '{}-{}'.format(number, number2)
         else:
             alphabet = address_config.get_property('alphabet', language, country=country, default=latin_alphabet)
             alphabet_probability = address_config.get_property('alphabet_probability', language, country=country, default=None)
@@ -51,12 +51,12 @@ class Staircase(NumberedComponent):
 
                 whitespace_probability = float(num_type_props.get('whitespace_probability', 0.0))
                 hyphen_probability = float(num_type_props.get('hyphen_probability', 0.0))
-                whitespace_phrase = u''
+                whitespace_phrase = ''
                 r = random.random()
                 if r < whitespace_probability:
-                    whitespace_phrase = u' '
+                    whitespace_phrase = ' '
                 elif r < (whitespace_probability + hyphen_probability):
-                    whitespace_phrase = u'-'
+                    whitespace_phrase = '-'
 
                 if num_type == cls.ALPHA_PLUS_NUMERIC:
                     return six.u('{}{}{}').format(letter, whitespace_phrase, number)

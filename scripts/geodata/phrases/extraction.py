@@ -4,6 +4,7 @@ import six
 import sys
 
 from collections import defaultdict, Counter
+from itertools import islice
 
 this_dir = os.path.realpath(os.path.dirname(__file__))
 sys.path.append(os.path.realpath(os.path.join(this_dir, os.pardir, os.pardir)))
@@ -31,7 +32,7 @@ class FrequentPhraseExtractor(object):
         self.train_words = 0
 
     def ngrams(self, words, n=2):
-        for t in izip(*(islice(words, i, None) for i in xrange(n))):
+        for t in zip(*(islice(words, i, None) for i in range(n))):
             yield t
 
     def add_tokens(self, s):
@@ -49,7 +50,7 @@ class FrequentPhraseExtractor(object):
         self.prune_vocab()
 
     def prune_vocab(self):
-        for k in self.vocab.keys():
+        for k in list(self.vocab.keys()):
             if self.vocab[k] < self.min_count:
                 del self.vocab[k]
 
@@ -101,7 +102,7 @@ class FrequentPhraseExtractor(object):
         f.seek(0)
         phrases.create_vocab(f)
 
-        for n in xrange(2, max_phrase_len + 1):
+        for n in range(2, max_phrase_len + 1):
             print('Doing frequent ngrams, n={} for {}'.format(n, filename))
             f.seek(0)
             phrases.find_ngram_phrases(f, n=n)

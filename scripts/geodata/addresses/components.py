@@ -97,10 +97,10 @@ class AddressComponents(object):
      u'en')
 
     '''
-    iso_alpha2_codes = set([c.alpha2.lower() for c in pycountry.countries])
-    iso_alpha3_codes = set([c.alpha3.lower() for c in pycountry.countries])
+    iso_alpha2_codes = set([c.alpha_2.lower() for c in pycountry.countries])
+    iso_alpha3_codes = set([c.alpha_3.lower() for c in pycountry.countries])
 
-    latin_alphabet_lower = set([unichr(c) for c in xrange(ord('a'), ord('z') + 1)])
+    latin_alphabet_lower = set([chr(c) for c in range(ord('a'), ord('z') + 1)])
 
     BOUNDARY_COMPONENTS = OrderedDict.fromkeys((
         AddressFormatter.SUBDIVISION,
@@ -170,7 +170,7 @@ class AddressComponents(object):
         AddressFormatter.UNIT: Unit,
     }
 
-    config = yaml.load(open(PARSER_DEFAULT_CONFIG))
+    config = yaml.load(open(PARSER_DEFAULT_CONFIG),Loader=yaml.FullLoader)
     # Non-admin component dropout
     address_level_dropout_probabilities = {k: v['probability'] for k, v in six.iteritems(config['dropout'])}
 
@@ -364,14 +364,14 @@ class AddressComponents(object):
                 k, qual = k.split(':', 1)
                 if k in valid_names and qual.split('_', 1)[0] in languages:
                     names[v] = None
-        return names.keys()
+        return list(names.keys())
 
     @classmethod
     def place_names_and_components(cls, name, osm_components, country=None, languages=None):
         names = set()
         components = defaultdict(set)
 
-        name_norm = six.u('').join([t for t, c in normalized_tokens(name, string_options=NORMALIZE_STRING_LOWERCASE,
+        name_norm = ''.join([t for t, c in normalized_tokens(name, string_options=NORMALIZE_STRING_LOWERCASE,
                                                                     token_options=TOKEN_OPTIONS_DROP_PERIODS, whitespace=True)])
         for i, props in enumerate(osm_components):
             containing_ids = [(c['type'], c['id']) for c in osm_components[i + 1:] if 'type' in c and 'id' in c]
@@ -382,7 +382,7 @@ class AddressComponents(object):
 
             valid_component_names = set()
             for n in component_names:
-                norm = six.u('').join([t for t, c in normalized_tokens(n, string_options=NORMALIZE_STRING_LOWERCASE,
+                norm = ''.join([t for t, c in normalized_tokens(n, string_options=NORMALIZE_STRING_LOWERCASE,
                                        token_options=TOKEN_OPTIONS_DROP_PERIODS, whitespace=True)])
 
                 if norm == name_norm:
@@ -435,15 +435,15 @@ class AddressComponents(object):
             if not is_phrase:
                 t, c = tokens
                 if stripped and c not in (token_types.IDEOGRAPHIC_CHAR, token_types.IDEOGRAPHIC_NUMBER):
-                    stripped.append(u' ')
+                    stripped.append(' ')
                 if c not in token_types.PUNCTUATION_TOKEN_TYPES:
                     stripped.append(t)
 
-        name = u''.join(stripped)
+        name = ''.join(stripped)
 
         return name
 
-    parens_regex = re.compile('\(.*?\)')
+    parens_regex = re.compile(r'\(.*?\)')
 
     @classmethod
     def normalized_place_name(cls, name, tag, osm_components, country=None, languages=None, phrase_from_component=False):
@@ -532,7 +532,7 @@ class AddressComponents(object):
                     address_components.pop(key)
 
     def normalize_address_components(self, components):
-        address_components = {k: v for k, v in components.iteritems()
+        address_components = {k: v for k, v in components.items()
                               if k in self.formatter.aliases}
         self.formatter.aliases.replace(address_components)
         return address_components
@@ -545,7 +545,7 @@ class AddressComponents(object):
         probs = {}
 
         for combo in combo_config:
-            components = OrderedDict.fromkeys(combo['components']).keys()
+            components = list(OrderedDict.fromkeys(combo['components']).keys())
 
             if not all((is_numeric(address_components.get(c, generated.get(c))) or generated.get(c) for c in components)):
                 if combo['probability'] == 1.0:
@@ -566,7 +566,7 @@ class AddressComponents(object):
         else:
             return None
 
-        components = OrderedDict.fromkeys(combo['components']).keys()
+        components = list(OrderedDict.fromkeys(combo['components']).keys())
 
         values = []
         probs = []
@@ -633,12 +633,12 @@ class AddressComponents(object):
             return num_type
 
     @classmethod
-    def get_component_phrase(cls, component, language, country=None):
+    def get_component_phrase(cls, comp_class, component, language, country=None):
         component = safe_decode(component)
         if not is_numeric(component) and not (component.isalpha() and len(component) == 1):
             return None
 
-        phrase = cls.phrase(component, language, country=country)
+        phrase = comp_class.phrase(component, language, country=country)
         if phrase != component:
             return phrase
         else:
@@ -646,10 +646,10 @@ class AddressComponents(object):
 
     @classmethod
     def normalize_sub_building_components(cls, address_components, language, country=None):
-        for component, cls in six.iteritems(cls.sub_building_component_class_map):
+        for component, comp_class in six.iteritems(cls.sub_building_component_class_map):
             if component in address_components:
                 val = address_components[component]
-                new_val = cls.get_component_phrase(cls, val, language, country)
+                new_val = cls.get_component_phrase(comp_class, val, language, country)
                 if new_val is not None:
                     address_components[component] = new_val
 
@@ -686,7 +686,7 @@ class AddressComponents(object):
         iso_3166_name_prob = float(cldr_config['iso_3166_name_probability'])
         alpha_3_iso_code_prob = float(cldr_config['iso_alpha_3_code_probability'])
 
-        localized, iso_3166, alpha3, alpha2 = range(4)
+        localized, iso_3166, alpha3, alpha2 = values = list(range(4))
         probs = cdf([localized_name_prob, iso_3166_name_prob, alpha_3_iso_code_prob, alpha_2_iso_code_prob])
         value = weighted_choice(values, probs)
 
@@ -785,7 +785,7 @@ class AddressComponents(object):
         if len(language_scripts) > 1:
             cumulative = float(sum(language_scripts.values()))
             values = list(language_scripts.keys())
-            probs = cdf([float(c) / cumulative for c in language_scripts.values()])
+            probs = cdf([float(c) / cumulative for c in list(language_scripts.values())])
             language_script = weighted_choice(values, probs)
 
         if not language_script and not non_local_language and not more_than_one_official_language:
@@ -795,8 +795,8 @@ class AddressComponents(object):
 
     # e.g. Dublin 3
     dublin_postal_district_regex_str = '(?:[1-9]|1[1-9]|2[0-4]|6w)'
-    dublin_postal_district_regex = re.compile('^{}$'.format(dublin_postal_district_regex_str), re.I)
-    dublin_city_district_regex = re.compile('dublin {}$'.format(dublin_postal_district_regex_str), re.I)
+    dublin_postal_district_regex = re.compile(r'^{}$'.format(dublin_postal_district_regex_str), re.I)
+    dublin_city_district_regex = re.compile(r'dublin {}$'.format(dublin_postal_district_regex_str), re.I)
 
     @classmethod
     def format_dublin_postal_district(cls, address_components):
@@ -833,7 +833,7 @@ class AddressComponents(object):
         return False
 
     # e.g. Kingston 5
-    kingston_postcode_regex = re.compile('(kingston )?([1-9]|1[1-9]|20|c\.?s\.?o\.?)$', re.I)
+    kingston_postcode_regex = re.compile(r'(kingston )?([1-9]|1[1-9]|20|c\.?s\.?o\.?)$', re.I)
 
     @classmethod
     def format_kingston_postcode(cls, address_components):
@@ -956,8 +956,8 @@ class AddressComponents(object):
                 return True
         return False
 
-    brasilia_street_name_regex = re.compile('(?:\\s*\-\\s*)?\\b(bloco|bl|lote|lt)\\b.*$', re.I | re.U)
-    brasilia_building_regex = re.compile('^\\s*bloco.*$', re.I | re.U)
+    brasilia_street_name_regex = re.compile(r'(?:\\s*\-\\s*)?\\b(bloco|bl|lote|lt)\\b.*$', re.I | re.U)
+    brasilia_building_regex = re.compile(r'^\\s*bloco.*$', re.I | re.U)
 
     @classmethod
     def format_brasilia_address(cls, address_components):
@@ -976,17 +976,17 @@ class AddressComponents(object):
 
     central_european_cities = {
         # Czech Republic
-        'cz': [u'praha', u'prague'],
+        'cz': ['praha', 'prague'],
         # Poland
-        'pl': [u'kraków', u'crakow', u'krakow'],
+        'pl': ['kraków', 'crakow', 'krakow'],
         # Hungary
-        'hu': [u'budapest'],
+        'hu': ['budapest'],
         # Slovakia
-        'sk': [u'bratislava', u'košice', u'kosice'],
+        'sk': ['bratislava', 'košice', 'kosice'],
         # Austria
-        'at': [u'wien', u'vienna', u'graz', u'linz', u'klagenfurt'],
+        'at': ['wien', 'vienna', 'graz', 'linz', 'klagenfurt'],
     }
-    central_european_city_district_regexes = {country: re.compile(u'^({})\s+(?:[0-9]+|[ivx]+\.?)\\s*$'.format(u'|'.join(cities)), re.I | re.U)
+    central_european_city_district_regexes = {country: re.compile(r'^({})\s+(?:[0-9]+|[ivx]+\.?)\\s*$'.format('|'.join(cities)), re.I | re.U)
                                               for country, cities in six.iteritems(central_european_cities)}
 
     @classmethod
@@ -1015,10 +1015,17 @@ class AddressComponents(object):
 
     english_streets = address_phrase_dictionaries.phrases.get((ENGLISH, 'street_types'), [])
     english_directionals = address_phrase_dictionaries.phrases.get((ENGLISH, 'directionals'), [])
-    english_numbered_route_regex = re.compile('highway|route')
-    english_numbered_route_phrases = set([safe_encode(p) for p in itertools.chain(*[streets for streets in english_streets if english_numbered_route_regex.search(streets[0])])])
-    english_street_phrases = [safe_encode(p) for p in itertools.chain(*(english_streets + english_directionals)) if safe_encode(p) not in english_numbered_route_phrases]
-    english_numbered_unit_regex = re.compile('^(.+ (?:{}))\s*#\s*(?:[\d]+|[a-z]|[a-z][\d]*\-?[\d]+|[\d]+\-?[\d]*[a-z])\s*$'.format(safe_encode('|').join(english_street_phrases)), re.I)
+    english_numbered_route_regex = re.compile(r'highway|route', re.I)
+    english_matched_streets = []
+    for streets in english_streets:
+        if english_numbered_route_regex.search(streets[0]):
+            english_matched_streets.append(streets[0])
+    english_numbered_route_phrases = set([safe_encode(p) for p in itertools.chain(*english_matched_streets)])
+    english_street_phrases = []
+    for p in itertools.chain(*(english_streets + english_directionals)):
+        if safe_encode(p) not in english_numbered_route_phrases:
+            english_street_phrases.append(safe_encode(p));
+    english_numbered_unit_regex = re.compile(r'^(.+ (?:{}))\s*#\s*(?:[\d]+|[a-z]|[a-z][\d]*\-?[\d]+|[\d]+\-?[\d]*[a-z])\s*$'.format(safe_encode('|').join(english_street_phrases)), re.I)
 
     @classmethod
     def strip_english_unit_number_suffix(cls, value):
@@ -1170,7 +1177,7 @@ class AddressComponents(object):
             city_replacements = place_config.city_replacements(country)
             have_city = AddressFormatter.CITY in grouped_osm_components or set(grouped_osm_components) & set(city_replacements)
 
-            for component, components_values in grouped_osm_components.iteritems():
+            for component, components_values in grouped_osm_components.items():
                 seen = set()
 
                 if country == Countries.JAPAN and component == AddressFormatter.SUBURB:
@@ -1192,7 +1199,7 @@ class AddressComponents(object):
                         name_prefix = component_value.get('{}:prefix'.format(k))
 
                         if name and name_prefix and random.random() < add_prefix_prob:
-                            name = u' '.join([name_prefix, name])
+                            name = ' '.join([name_prefix, name])
 
                         if name and not (name == existing_city_name and component != AddressFormatter.CITY and drop_duplicate_city_names):
                             name = self.cleaned_name(name, first_comma_delimited_phrase=True)
@@ -1213,7 +1220,7 @@ class AddressComponents(object):
 
             is_japan = country == Countries.JAPAN
 
-            for component, vals in poly_components.iteritems():
+            for component, vals in poly_components.items():
                 if component not in address_components or (non_local_language and random.random() < replace_with_non_local_prob):
                     if random_key:
                         if is_japan and component == AddressFormatter.SUBURB:
@@ -1241,7 +1248,7 @@ class AddressComponents(object):
 
             address_components.update(new_admin_components)
 
-    generic_wiki_name_regex = re.compile('^[a-z]{2,3}:')
+    generic_wiki_name_regex = re.compile(r'^[a-z]{2,3}:')
 
     @classmethod
     def unambiguous_wikipedia(cls, osm_component, language):
@@ -1310,7 +1317,7 @@ class AddressComponents(object):
                 name = neighborhood.get(k)
                 name_prefix = neighborhood.get('{}:prefix'.format(k))
                 if name and name_prefix and random.random() < add_prefix_prob:
-                    name = u' '.join([name_prefix, name])
+                    name = ' '.join([name_prefix, name])
                 if name:
                     break
 
@@ -1332,7 +1339,7 @@ class AddressComponents(object):
 
         neighborhood_components = {}
 
-        for component, neighborhoods in neighborhood_levels.iteritems():
+        for component, neighborhoods in neighborhood_levels.items():
             if component not in address_components:
                 if len(neighborhoods) == 1 or random.random() < use_first_match_prob:
                     neighborhood_components[component] = neighborhoods[0]
@@ -1466,7 +1473,7 @@ class AddressComponents(object):
         Make a few special replacements (like UK instead of GB)
         '''
 
-        for component, value in address_components.iteritems():
+        for component, value in address_components.items():
             replacement = nested_get(cls.config, ('value_replacements', component, value), default=None)
             if replacement is not None:
                 new_value = repl['replacement']
@@ -1528,7 +1535,7 @@ class AddressComponents(object):
             if name:
                 name_components[name.lower()].append(component)
 
-        for name, components in name_components.iteritems():
+        for name, components in name_components.items():
             if len(components) > 1:
                 for component in components[1:]:
                     address_components.pop(component, None)
@@ -1595,7 +1602,7 @@ class AddressComponents(object):
             else:
                 address_components.pop(AddressFormatter.HOUSE_NUMBER, None)
 
-    invalid_street_regex = re.compile('^\s*(?:none|null|not applicable|n\s*/\s*a)\s*$', re.I)
+    invalid_street_regex = re.compile(r'^\s*(?:none|null|not applicable|n\s*/\s*a)\s*$', re.I)
 
     @classmethod
     def street_name_is_valid(cls, street):
@@ -1607,10 +1614,10 @@ class AddressComponents(object):
         if street is not None and not cls.street_name_is_valid(street):
             address_components.pop(AddressFormatter.ROAD)
 
-    newline_regex = re.compile('[\n]+')
-    name_regex = re.compile('^[\s\-]*(.*?)[\s\-]*$')
-    whitespace_regex = re.compile('(?<=[\w])[\s]+(?=[\w])')
-    hyphen_regex = re.compile('[\s]*[\-]+[\s]*')
+    newline_regex = re.compile(r'[\n]+')
+    name_regex = re.compile(r'^[\s\-]*(.*?)[\s\-]*$')
+    whitespace_regex = re.compile(r'(?<=[\w])[\s]+(?=[\w])')
+    hyphen_regex = re.compile(r'[\s]*[\-]+[\s]*')
 
     @classmethod
     def dehyphenate_multiword_name(cls, name):

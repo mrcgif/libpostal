@@ -36,7 +36,7 @@ class CategoryConfig(object):
             plural_rules = self.language_categories_plural.get(base_lang, defaultdict(list))
 
             reader = csv.reader(open(os.path.join(CATEGORIES_DIR, filename)), delimiter='\t')
-            reader.next()  # headers
+            next(reader)  # headers
 
             for key, value, is_plural, phrase in reader:
                 self.language_property_names[lang].add(key)

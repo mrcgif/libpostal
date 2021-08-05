@@ -40,4 +40,4 @@ class Conjunction(object):
             phrase = six.u('{}{}{}').format(whitespace_phrase, phrase, whitespace_phrase)
         joined_phrase = phrase.join(phrases[-max_phrase_join:])
 
-        return six.u('').join([prefix, joined_phrase])
+        return ''.join([prefix, joined_phrase])

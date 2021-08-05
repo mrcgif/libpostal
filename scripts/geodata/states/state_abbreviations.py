@@ -23,7 +23,7 @@ class StateAbbreviations(object):
 
         for filename in os.listdir(base_dir):
             country = filename.split('.yaml')[0]
-            country_config = yaml.load(open(os.path.join(base_dir, filename)))
+            country_config = yaml.load(open(os.path.join(base_dir, filename)), Loader=yaml.FullLoader)
 
             country_abbreviations = defaultdict(list)
             country_full_names = defaultdict(dict)

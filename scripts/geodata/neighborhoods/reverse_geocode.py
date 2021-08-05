@@ -32,98 +32,98 @@ from geodata.statistics.tf_idf import IDFIndex
 class NeighborhoodDeduper(NameDeduper):
     # Lossless conversions only
     replacements = {
-        u'saint': u'st',
-        u'and': u'&',
-        u'〇': u'0',
-        u'一': u'1',
-        u'二': u'2',
-        u'三': u'3',
-        u'四': u'4',
-        u'五': u'5',
-        u'六': u'6',
-        u'七': u'7',
-        u'八': u'8',
-        u'九': u'9',
-        u'十': u'10',
+        'saint': 'st',
+        'and': '&',
+        '〇': '0',
+        '一': '1',
+        '二': '2',
+        '三': '3',
+        '四': '4',
+        '五': '5',
+        '六': '6',
+        '七': '7',
+        '八': '8',
+        '九': '9',
+        '十': '10',
     }
 
     discriminative_words = set([
         # Han numbers
-        u'〇', u'一',
-        u'二', u'三',
-        u'四', u'五',
-        u'六', u'七',
-        u'八', u'九',
-        u'十', u'百',
-        u'千', u'万',
-        u'億', u'兆',
-        u'京', u'第',
+        '〇', '一',
+        '二', '三',
+        '四', '五',
+        '六', '七',
+        '八', '九',
+        '十', '百',
+        '千', '万',
+        '億', '兆',
+        '京', '第',
 
         # Roman numerals
-        u'i', u'ii',
-        u'iii', u'iv',
-        u'v', u'vi',
-        u'vii', u'viii',
-        u'ix', u'x',
-        u'xi', u'xii',
-        u'xiii', u'xiv',
-        u'xv', u'xvi',
-        u'xvii', u'xviii',
-        u'xix', u'xx',
+        'i', 'ii',
+        'iii', 'iv',
+        'v', 'vi',
+        'vii', 'viii',
+        'ix', 'x',
+        'xi', 'xii',
+        'xiii', 'xiv',
+        'xv', 'xvi',
+        'xvii', 'xviii',
+        'xix', 'xx',
 
         # English directionals
-        u'north', u'south',
-        u'east', u'west',
-        u'northeast', u'northwest',
-        u'southeast', u'southwest',
+        'north', 'south',
+        'east', 'west',
+        'northeast', 'northwest',
+        'southeast', 'southwest',
 
         # Spanish, Portguese and Italian directionals
-        u'norte', u'nord', u'sur', u'sul', u'sud',
-        u'est', u'este', u'leste', u'oeste', u'ovest',
+        'norte', 'nord', 'sur', 'sul', 'sud',
+        'est', 'este', 'leste', 'oeste', 'ovest',
 
         # New in various languages
-        u'new',
-        u'nova',
-        u'novo',
-        u'nuevo',
-        u'nueva',
-        u'nuovo',
-        u'nuova',
+        'new',
+        'nova',
+        'novo',
+        'nuevo',
+        'nueva',
+        'nuovo',
+        'nuova',
 
         # Qualifiers
-        u'heights',
-        u'hills',
+        'heights',
+        'hills',
 
-        u'upper', u'lower',
-        u'little', u'great',
+        'upper', 'lower',
+        'little', 'great',
 
-        u'park',
-        u'parque',
+        'park',
+        'parque',
 
-        u'village',
+        'village',
 
     ])
 
     stopwords = set([
-        u'cp',
-        u'de',
-        u'la',
-        u'urbanizacion',
-        u'do',
-        u'da',
-        u'dos',
-        u'del',
-        u'community',
-        u'bairro',
-        u'barrio',
-        u'le',
-        u'el',
-        u'mah',
-        u'раион',
-        u'vila',
-        u'villa',
-        u'kampung',
-        u'ahupua`a',
+        'cp',
+        'de',
+        'la',
+        'urbanizacion',
+        'do',
+        'da',
+        'dos',
+        'del',
+        'community',
+        'bairro',
+        'barrio',
+        'le',
+        'el',
+        'mah',
+        'раион',
+        'vila',
+        'villa',
+        'kampung',
+        'ahupua`a',
 
     ])
 
@@ -139,7 +139,7 @@ class ClickThatHoodReverseGeocoder(GeohashPolygonIndex):
 
     config_path = os.path.join(RESOURCES_DIR, 'neighborhoods', 'click_that_hood.yaml')
 
-    config = yaml.load(open(config_path))
+    config = yaml.load(open(config_path), Loader=yaml.FullLoader)
 
     @classmethod
     def clone_repo(cls, path):
@@ -235,16 +235,16 @@ class NeighborhoodReverseGeocoder(RTreePolygonIndex):
     }
 
     regex_replacements = [
-        # Paris arrondissements, listed like "PARIS-1ER-ARRONDISSEMENT" in Quqttroshapes
-        (re.compile('^paris-(?=[\d])', re.I), ''),
-        (re.compile('^prague(?= [\d]+$)', re.I), 'Praha'),
+        # Paris arrondissements, listed like "PARIS-1ER-ARRONDISSEMENT" in Quattroshapes
+        (re.compile(r'^paris-(?=[\d])', re.I), ''),
+        (re.compile(r'^prague(?= [\d]+$)', re.I), 'Praha'),
     ]
 
     quattroshapes_city_district_patterns = [
         six.u('Praha [\d]+'),
     ]
 
-    quattroshapes_city_district_regex = re.compile('|'.join([six.u('^\s*{}\s*$').format(p) for p in quattroshapes_city_district_patterns]), re.I | re.U)
+    quattroshapes_city_district_regex = re.compile(r'|'.join([six.u('^\s*{}\s*$').format(p) for p in quattroshapes_city_district_patterns]), re.I | re.U)
 
     @classmethod
     def count_words(cls, s):
@@ -334,7 +334,7 @@ class NeighborhoodReverseGeocoder(RTreePolygonIndex):
                 continue
 
             id_type, element_id = element_id.split(':')
-            element_id = long(element_id)
+            element_id = int(element_id)
 
             props['type'] = id_type
             props['id'] = element_id

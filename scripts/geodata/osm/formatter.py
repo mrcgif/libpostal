@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
+import copy
+import ftfy
 import itertools
 import os
 import random
 import re
 import six
 import sys
-import ftfy
 import yaml
 
 from collections import defaultdict, OrderedDict, Counter
@@ -71,7 +72,7 @@ JAPANESE_ROMAJI = 'ja_rm'
 
 ENGLISH = 'en'
 
-numbered_tag_regex = re.compile('_[\d]+$')
+numbered_tag_regex = re.compile(r'_[\d]+$')
 
 
 class OSMAddressFormatter(object):
@@ -163,7 +164,7 @@ class OSMAddressFormatter(object):
 
         self.metro_stations_index = metro_stations_index
 
-        self.config = yaml.load(open(OSM_PARSER_DATA_DEFAULT_CONFIG))
+        self.config = yaml.load(open(OSM_PARSER_DATA_DEFAULT_CONFIG), Loader=yaml.FullLoader)
         self.formatter = AddressFormatter()
 
     def namespaced_language(self, tags, candidate_languages):
@@ -179,8 +180,8 @@ class OSMAddressFormatter(object):
             if namespaced and random.random() < pick_namespaced_language_prob:
                 language = random.choice(namespaced)
                 lang_suffix = ':{}'.format(language)
-                for k in tags:
-
+                initial_tags = copy.deepcopy(tags)
+                for k in initial_tags:
                     if k.endswith(lang_suffix):
                         tags[k.rstrip(lang_suffix)] = tags[k]
 
@@ -812,19 +813,19 @@ class OSMAddressFormatter(object):
                 language_suffix = ''
 
                 if name and name.strip():
-                    if u';' in name:
-                        name = random.choice(name.split(u';'))
-                    elif u',' in name:
-                        name = name.split(u',', 1)[0]
+                    if ';' in name:
+                        name = random.choice(name.split(';'))
+                    elif ',' in name:
+                        name = name.split(',', 1)[0]
 
-                    if u'|' in name:
-                        name = name.replace(u'|', u'')
+                    if '|' in name:
+                        name = name.replace('|', '')
 
                     name = self.components.strip_whitespace_and_hyphens(name)
 
                     alt_names = self.components.alt_place_names(name, None)
 
-                    for i in xrange(num_references if name_tag == 'name' else 1):
+                    for i in range(num_references if name_tag == 'name' else 1):
                         address_components = {component_name: name}
 
                         self.components.add_admin_boundaries(address_components, osm_components, country, UNKNOWN_LANGUAGE,
@@ -859,7 +860,7 @@ class OSMAddressFormatter(object):
                 if six.u('|') in name:
                     name = name.replace(six.u('|'), six.u(''))
 
-                n = min_references / 2
+                n = min_references // 2
                 if name_tag == 'name':
                     if is_default:
                         n = num_references
@@ -870,7 +871,7 @@ class OSMAddressFormatter(object):
 
                 alt_names = self.components.alt_place_names(name, language)
 
-                for i in xrange(n):
+                for i in range(n):
                     address_components = {component_name: name}
                     self.components.add_admin_boundaries(address_components, osm_components, country, language,
                                                          latitude, longitude,
@@ -908,7 +909,7 @@ class OSMAddressFormatter(object):
                 alt_names = self.components.alt_place_names(name, language)
 
                 # Add half as many English records as the local language, every other language gets min_referenes / 2
-                for i in xrange(num_references / 2 if language == ENGLISH else min_references / 2):
+                for i in range(num_references / 2 if language == ENGLISH else min_references // 2):
                     address_components = {component_name: name}
                     self.components.add_admin_boundaries(address_components, osm_components, country, language,
                                                          latitude, longitude,
@@ -928,7 +929,7 @@ class OSMAddressFormatter(object):
                 extra_place_tags = []
                 num_existing_place_tags = len(place_tags)
                 for postal_code in postal_codes:
-                    for i in xrange(min(min_references, num_existing_place_tags)):
+                    for i in range(min(min_references, num_existing_place_tags)):
                         if num_references == min_references:
                             # For small places, make sure we get every variation
                             address_components, language, is_default = place_tags[i]
@@ -1261,7 +1262,7 @@ class OSMAddressFormatter(object):
                 formatted_addresses.extend(self.formatted_addresses_with_venue_names(address_components, dropout_venue_names, country, language=language,
                                                                                      tag_components=tag_components, minimal_only=False))
 
-        return OrderedDict.fromkeys(formatted_addresses).keys(), country, language
+        return list(OrderedDict.fromkeys(formatted_addresses).keys()), country, language
 
     def formatted_address_limited(self, tags):
         try:
@@ -1284,7 +1285,7 @@ class OSMAddressFormatter(object):
         if not address_components:
             return None, None, None
 
-        address_components = {k: v for k, v in address_components.iteritems() if k in OSM_ADDRESS_COMPONENT_VALUES}
+        address_components = {k: v for k, v in address_components.items() if k in OSM_ADDRESS_COMPONENT_VALUES}
         if not address_components:
             return []
 

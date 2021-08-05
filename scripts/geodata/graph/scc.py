@@ -1,4 +1,4 @@
-VISIT, VISIT_EDGE, POST_VISIT = range(3)
+VISIT, VISIT_EDGE, POST_VISIT = list(range(3))
 
 
 def strongly_connected_components(graph):

@@ -1,14 +1,14 @@
 import sys
-from encoding import safe_decode
+from .encoding import safe_decode
 
 NUM_CODEPOINTS = 0x10FFFF + 1
 
 
 def wide_unichr(i):
     if i <= sys.maxunicode:
-        return unichr(i)
+        return chr(i)
     else:
-        return '\U{0:08x}'.format(i).decode('unicode-escape')
+        return r'\U{0:08x}'.format(i).decode('unicode-escape')
 
 
 def wide_ord(c):

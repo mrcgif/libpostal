@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from __future__ import unicode_literals
-
 import os
 import sys
 import unittest
@@ -100,8 +98,8 @@ class TestNormalization(unittest.TestCase):
             languages = get_country_languages(country)
             self.assertTrue(bool(languages))
 
-            lang = disambiguate_language(s, languages.items())
-            self.assertEqual(lang, expected, '{} != {} for {}, langs={}'.format(lang, expected, s, languages.items()))
+            lang = disambiguate_language(s, list(languages.items()))
+            self.assertEqual(lang, expected, '{} != {} for {}, langs={}'.format(lang, expected, s, list(languages.items())))
 
     def test_regional(self):
         for s, country, k, v, expected in regional_test_cases:
@@ -111,9 +109,9 @@ class TestNormalization(unittest.TestCase):
             self.assertTrue(bool(regional))
             regional.update(languages)
 
-            lang = disambiguate_language(s, regional.items())
+            lang = disambiguate_language(s, list(regional.items()))
 
-            self.assertEqual(lang, expected, '{} != {} for {}, langs={}'.format(lang, expected, s, regional.items()))
+            self.assertEqual(lang, expected, '{} != {} for {}, langs={}'.format(lang, expected, s, list(regional.items())))
 
 if __name__ == '__main__':
     unittest.main()

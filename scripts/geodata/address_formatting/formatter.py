@@ -43,7 +43,7 @@ class AddressFormatter(object):
         address_formatter.format_address(components, country, language)
     '''
 
-    whitespace_component_regex = re.compile('[\r\n]+[\s\r\n]*')
+    whitespace_component_regex = re.compile(r'[\r\n]+[\s\r\n]*')
 
     splitter = ' | '
 
@@ -169,8 +169,8 @@ class AddressFormatter(object):
     template_address_parts = [HOUSE, HOUSE_NUMBER, ROAD]
     template_admin_parts = [CITY, STATE, COUNTRY]
 
-    template_address_parts_re = re.compile('|'.join(['\{{{key}\}}'.format(key=key) for key in template_address_parts]))
-    template_admin_parts_re = re.compile('|'.join(['\{{{key}\}}'.format(key=key) for key in template_admin_parts]))
+    template_address_parts_re = re.compile(r'|'.join(['\{{{key}\}}'.format(key=key) for key in template_address_parts]))
+    template_admin_parts_re = re.compile(r'|'.join(['\{{{key}\}}'.format(key=key) for key in template_admin_parts]))
 
     MINIMAL_COMPONENT_KEYS = [
         (ROAD, HOUSE_NUMBER),
@@ -178,7 +178,7 @@ class AddressFormatter(object):
         (ROAD, POSTCODE)
     ]
 
-    FIRST, BEFORE, AFTER, LAST = range(4)
+    FIRST, BEFORE, AFTER, LAST = list(range(4))
 
     def __init__(self, scratch_dir='/tmp', splitter=None):
         if splitter is not None:
@@ -205,7 +205,7 @@ class AddressFormatter(object):
 
     def load_country_formats(self):
         config = yaml.load(open(os.path.join(self.formatter_repo_path,
-                                'conf', 'countries', 'worldwide.yaml')))
+                                'conf', 'countries', 'worldwide.yaml')), Loader=yaml.FullLoader)
         self.country_aliases = {}
         self.house_number_ordering = {}
 
@@ -248,7 +248,7 @@ class AddressFormatter(object):
         self.country_formats = config
 
     def load_config(self):
-        config = yaml.load(open(FORMATTER_CONFIG))
+        config = yaml.load(open(FORMATTER_CONFIG), Loader=yaml.FullLoader)
         self.config = config.get('global', {})
         language_configs = config.get('languages', {})
 
@@ -303,7 +303,7 @@ class AddressFormatter(object):
         # If the probabilities don't sum to 1, add a "do nothing" action
         if not isclose(sum(probs), 1.0):
             probs.append(1.0 - sum(probs))
-            values.append((None, None, False))
+            values.append((None, None))
 
         return values, cdf(probs)
 
@@ -567,7 +567,7 @@ class AddressFormatter(object):
         def render_first(text):
             text = pystache.render(text, **components)
             splits = (e.strip() for e in text.split('||'))
-            selected = next(ifilter(bool, splits), '')
+            selected = next(filter(bool, splits), '')
             return selected
 
         output = pystache.render(template, first=render_first,

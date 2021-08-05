@@ -10,6 +10,7 @@ import logging
 import os
 import six
 import sys
+import time
 
 from bisect import bisect_left
 from collections import defaultdict, OrderedDict
@@ -77,10 +78,10 @@ class OSMPolygonReader(object):
         start_index = indptr[idx] * 2
         end_index = indptr[idx + 1] * 2
         node_coords = coords[start_index:end_index]
-        return zip(node_coords[::2], node_coords[1::2])
+        return list(zip(node_coords[::2], node_coords[1::2]))
 
     def sparse_deps(self, data, indptr, idx):
-        return [data[i] for i in xrange(indptr[idx], indptr[idx + 1])]
+        return [data[i] for i in range(indptr[idx], indptr[idx + 1])]
 
     def create_polygons(self, ways):
         '''
@@ -135,12 +136,12 @@ class OSMPolygonReader(object):
         # Way graph for a single polygon, don't need to be as concerned about storage
         way_graph = defaultdict(OrderedDict)
 
-        for node_id, ways in end_nodes.iteritems():
+        for node_id, ways in end_nodes.items():
             for w1, w2 in combinations(ways, 2):
                 way_graph[w1][w2] = None
                 way_graph[w2][w1] = None
 
-        way_graph = {v: w.keys() for v, w in way_graph.iteritems()}
+        way_graph = {v: list(w.keys()) for v, w in way_graph.items()}
 
         for component in strongly_connected_components(way_graph):
             poly_nodes = []
@@ -202,7 +203,7 @@ class OSMPolygonReader(object):
         for element_id, props, deps in parse_osm(self.filename, dependencies=True):
             props = {safe_decode(k): safe_decode(v) for k, v in six.iteritems(props)}
             if element_id.startswith('node'):
-                node_id = long(element_id.split(':')[-1])
+                node_id = int(element_id.split(':')[-1])
                 lat = props.get('lat')
                 lon = props.get('lon')
                 if lat is None or lon is None:
@@ -227,7 +228,7 @@ class OSMPolygonReader(object):
                 self.coords.append(lat)
                 self.node_ids.append(node_id)
             elif element_id.startswith('way'):
-                way_id = long(element_id.split(':')[-1])
+                way_id = int(element_id.split(':')[-1])
 
                 # Get node indices by binary search
                 try:
@@ -240,7 +241,7 @@ class OSMPolygonReader(object):
 
                 # way_deps is the list of dependent node ids
                 # way_coords is a copy of coords indexed by way ids
-                for node_id, node_index in izip(deps, node_indices):
+                for node_id, node_index in zip(deps, node_indices):
                     self.way_deps.append(node_id)
                     self.way_coords.append(self.coords[node_index * 2])
                     self.way_coords.append(self.coords[node_index * 2 + 1])
@@ -262,7 +263,7 @@ class OSMPolygonReader(object):
                 if self.coords is not None:
                     self.coords = None
 
-                relation_id = long(element_id.split(':')[-1])
+                relation_id = int(element_id.split(':')[-1])
                 if len(deps) == 0 or not self.include_polygon(props) or props.get('type', '').lower() == 'multilinestring':
                     continue
 
@@ -276,13 +277,13 @@ class OSMPolygonReader(object):
                     elif role == 'inner' and elem_type == 'way':
                         inner_ways.append(elem_id)
                     elif role == 'admin_centre' and elem_type == 'node':
-                        val = self.nodes.get(long(elem_id))
+                        val = self.nodes.get(int(elem_id))
                         if val is not None:
                             val['type'] = 'node'
-                            val['id'] = long(elem_id)
+                            val['id'] = int(elem_id)
                             admin_centers.append(val)
                     elif role == 'label' and elem_type == 'node':
-                        val = self.nodes.get(long(elem_id))
+                        val = self.nodes.get(int(elem_id))
                         if val is not None and val.get('name', six.u('')).lower() == props.get('name', six.u('')).lower():
                             props.update({k: v for k, v in six.iteritems(val)
                                           if k not in props})

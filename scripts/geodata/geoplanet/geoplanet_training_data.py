@@ -279,8 +279,8 @@ class GeoPlanetFormatter(object):
                 if country_alpha3_code and language in (None, 'ENG'):
                     containing_places[AddressFormatter.COUNTRY].add(country_alpha3_code)
 
-                keys = containing_places.keys()
-                all_values = containing_places.values()
+                keys = list(containing_places.keys())
+                all_values = list(containing_places.values())
 
                 keys_set = set(keys)
 
@@ -290,7 +290,7 @@ class GeoPlanetFormatter(object):
                     }
 
                     if not default_city_names:
-                        components.update(zip(keys, values))
+                        components.update(list(zip(keys, values)))
                     else:
                         for k, v in zip(keys, values):
                             if k == AddressFormatter.CITY or AddressFormatter.CITY in keys_set or v.lower() not in default_city_names:

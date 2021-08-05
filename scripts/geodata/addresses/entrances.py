@@ -20,7 +20,7 @@ from geodata.math.sampling import weighted_choice, zipfian_distribution, cdf
 class Entrance(NumberedComponent):
     max_entrances = 10
 
-    entrance_range = range(1, max_entrances + 1)
+    entrance_range = list(range(1, max_entrances + 1))
     entrance_range_probs = zipfian_distribution(len(entrance_range), 2.0)
     entrance_range_cdf = cdf(entrance_range_probs)
 
@@ -36,7 +36,7 @@ class Entrance(NumberedComponent):
         elif num_type == cls.HYPHENATED_NUMBER:
             number = weighted_choice(cls.entrance_range, cls.entrance_range_cdf)
             number2 = number + weighted_choice(cls.entrance_range, cls.entrance_range_cdf)
-            return u'{}-{}'.format(number, number2)
+            return '{}-{}'.format(number, number2)
         else:
             alphabet = address_config.get_property('alphabet', language, country=country, default=latin_alphabet)
             alphabet_probability = address_config.get_property('alphabet_probability', language, country=country, default=None)
@@ -50,12 +50,12 @@ class Entrance(NumberedComponent):
 
                 whitespace_probability = float(num_type_props.get('whitespace_probability', 0.0))
                 hyphen_probability = float(num_type_props.get('hyphen_probability', 0.0))
-                whitespace_phrase = u''
+                whitespace_phrase = ''
                 r = random.random()
                 if r < whitespace_probability:
-                    whitespace_phrase = u' '
+                    whitespace_phrase = ' '
                 elif r < (whitespace_probability + hyphen_probability):
-                    whitespace_phrase = u'-'
+                    whitespace_phrase = '-'
 
                 if num_type == cls.ALPHA_PLUS_NUMERIC:
                     return six.u('{}{}{}').format(letter, whitespace_phrase, number)

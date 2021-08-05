@@ -5,8 +5,7 @@ import requests
 import sys
 
 from collections import Counter
-
-from cStringIO import StringIO
+from io import StringIO
 from lxml import etree
 
 this_dir = os.path.realpath(os.path.dirname(__file__))
@@ -73,7 +72,7 @@ def write_country_official_languages_file(xml, out_dir):
                 regional.add(language)
 
         if official:
-            languages = Counter({l: c for l, c in languages.iteritems()
+            languages = Counter({l: c for l, c in languages.items()
                                  if l in official or l in regional})
         else:
             languages = Counter({l: c for l, c in languages.most_common(1)})
@@ -100,13 +99,13 @@ def write_languages_file(langs, macro, out_dir):
                      'ISO 639-1', 'type', 'macro'))
 
     macro_reader = csv.reader(StringIO(macro), delimiter='\t')
-    headers = macro_reader.next()
+    headers = next(macro_reader)
     assert len(headers) == 3
     macros = {minor_code: macro_code for (macro_code, minor_code, status)
               in macro_reader if status != RETIRED}
 
     lang_reader = csv.reader(StringIO(langs), delimiter='\t')
-    headers = lang_reader.next()
+    headers = next(lang_reader)
     assert headers[:6] == ['Id', 'Part2B', 'Part2T',
                            'Part1', 'Scope', 'Language_Type']
 

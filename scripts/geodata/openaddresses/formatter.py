@@ -38,23 +38,23 @@ from geodata.csv_utils import tsv_string, unicode_csv_reader
 OPENADDRESSES_FORMAT_DATA_TAGGED_FILENAME = 'openaddresses_formatted_addresses_tagged.tsv'
 OPENADDRESSES_FORMAT_DATA_FILENAME = 'openaddresses_formatted_addresses.tsv'
 
-null_regex = re.compile('^\s*(?:null|none)\s*$', re.I)
-unknown_regex = re.compile('\bunknown\b', re.I)
-not_applicable_regex = re.compile('^\s*n\.?\s*/?\s*a\.?\s*$', re.I)
-sin_numero_regex = re.compile('^\s*s\s*/\s*n\s*$', re.I)
+null_regex = re.compile(r'^\s*(?:null|none)\s*$', re.I)
+unknown_regex = re.compile(r'\bunknown\b', re.I)
+not_applicable_regex = re.compile(r'^\s*n\.?\s*/?\s*a\.?\s*$', re.I)
+sin_numero_regex = re.compile(r'^\s*s\s*/\s*n\s*$', re.I)
 
 russian_number_regex_str = safe_decode(r'(?:№\s*)?(?:(?:[\d]+\w?(?:[\-/](?:(?:[\d]+\w?)|\w))*)|(?:[\d]+\s*\w?)|(?:\b\w\b))')
 dom_korpus_stroyeniye_regex = re.compile(safe_decode('(?:(?:дом(?=\s)|д\.?)\s*)?{}(?:(?:\s*,|\s+)\s*(?:(?:корпус(?=\s)|к\.?)\s*){})?(?:(?:\s*,|\s+)\s*(?:(?:строение(?=\s)|с\.?)\s*){})?\s*$').format(russian_number_regex_str, russian_number_regex_str, russian_number_regex_str), re.I | re.U)
 uchastok_regex = re.compile(safe_decode('{}\s*(?:,?\s*участок\s+{}\s*)?$').format(russian_number_regex_str, russian_number_regex_str), re.I | re.U)
 bea_nomera_regex = re.compile(safe_decode('^\s*б\s*/\s*н\s*$'), re.I)
-fraction_regex = re.compile('^\s*[\d]+[\s]*/[\s]*(?:[\d]+|[a-z]|[\d]+[a-z]|[a-z][\d]+)[\s]*$', re.I)
-number_space_letter_regex = re.compile('^[\d]+\s+[a-z]$', re.I)
-number_slash_number_regex = re.compile('^(?:[\d]+|[a-z]|[\d]+[a-z]|[a-z][\d]+)[\s]*/[\s]*(?:[\d]+|[a-z]|[\d]+[a-z]|[a-z][\d]+)$', re.I)
-number_fraction_regex = re.compile('^(?:[\d]+\s+)?(?:1[\s]*/[\s]*[234]|2[\s]*/[\s]*3)$')
+fraction_regex = re.compile(r'^\s*[\d]+[\s]*/[\s]*(?:[\d]+|[a-z]|[\d]+[a-z]|[a-z][\d]+)[\s]*$', re.I)
+number_space_letter_regex = re.compile(r'^[\d]+\s+[a-z]$', re.I)
+number_slash_number_regex = re.compile(r'^(?:[\d]+|[a-z]|[\d]+[a-z]|[a-z][\d]+)[\s]*/[\s]*(?:[\d]+|[a-z]|[\d]+[a-z]|[a-z][\d]+)$', re.I)
+number_fraction_regex = re.compile(r'^(?:[\d]+\s+)?(?:1[\s]*/[\s]*[234]|2[\s]*/[\s]*3)$')
 
-colombian_standard_house_number_regex = re.compile('^(\d+[\s]*[a-z]?)\s+([a-z]?[\d]+[\s]*[a-z]?)?', re.I)
+colombian_standard_house_number_regex = re.compile(r'^(\d+[\s]*[a-z]?)\s+([a-z]?[\d]+[\s]*[a-z]?)?', re.I)
 
-dutch_house_number_regex = re.compile('([\d]+)( [a-z])?( [\d]+)?', re.I)
+dutch_house_number_regex = re.compile(r'([\d]+)( [a-z])?( [\d]+)?', re.I)
 
 SPANISH = 'es'
 PORTUGUESE = 'pt'
@@ -66,18 +66,18 @@ class OpenAddressesFormatter(object):
     field_regex_replacements = {
         # All fields
         None: [
-            (re.compile('<\s*null\s*>', re.I), u''),
-            (re.compile('[\s]{2,}'), six.u(' ')),
-            (re.compile('\`'), u"'"),
-            (re.compile('\-?\*'), u""),
+            (re.compile(r'<\s*null\s*>', re.I), ''),
+            (re.compile(r'[\s]{2,}'), six.u(' ')),
+            (re.compile(r'\`'), "'"),
+            (re.compile(r'\-?\*'), ""),
         ],
         AddressFormatter.HOUSE_NUMBER: [
             # Most of the house numbers in Montreal start with "#"
-            (re.compile('^#', re.UNICODE), u''),
+            (re.compile(r'^#', re.UNICODE), ''),
             # Some house numbers have multiple hyphens
-            (re.compile('[\-]{2,}'), u'-'),
+            (re.compile(r'[\-]{2,}'), '-'),
             # Some house number ranges are split up like "12 -14"
-            (re.compile('[\s]*\-[\s]*'), u'-'),
+            (re.compile(r'[\s]*\-[\s]*'), '-'),
         ]
     }
 
@@ -165,7 +165,7 @@ class OpenAddressesFormatter(object):
                 return False
             tokens = tokenize(house_number)
 
-            if all((c in token_types.NUMERIC_TOKEN_TYPES or t in (u'号', u'栋', u'附')) for t, c in tokens):
+            if all((c in token_types.NUMERIC_TOKEN_TYPES or t in ('号', '栋', '附')) for t, c in tokens):
                 return True
             return cls.validate_house_number(house_number)
 
@@ -196,41 +196,41 @@ class OpenAddressesFormatter(object):
         }
     }
 
-    chinese_annex_regex = re.compile(u'([\d]+)(?![\d号栋])', re.U)
+    chinese_annex_regex = re.compile(r'([\d]+)(?![\d号栋])', re.U)
 
     @classmethod
     def format_chinese_house_number(cls, house_number):
         if not house_number:
             return house_number
-        return cls.chinese_annex_regex.sub(u'\\1号', house_number)
+        return cls.chinese_annex_regex.sub('\\1号', house_number)
 
     @classmethod
     def format_colombian_house_number(cls, house_number):
         house_number = house_number.strip()
         match = colombian_standard_house_number_regex.match(house_number)
         if match:
-            separator = random.choice((u'-', u' - ', u' '))
+            separator = random.choice(('-', ' - ', ' '))
 
             cross_street, building_number = match.groups()
 
             numbers = []
-            if cross_street and u' ' in cross_street and random.choice((True, False)):
-                cross_street = cross_street.replace(u' ', u'')
+            if cross_street and ' ' in cross_street and random.choice((True, False)):
+                cross_street = cross_street.replace(' ', '')
 
             if cross_street:
                 numbers.append(cross_street)
 
-            if building_number and u' ' in building_number and random.choice((True, False)):
-                building_number = building_number.replace(u' ', u'')
+            if building_number and ' ' in building_number and random.choice((True, False)):
+                building_number = building_number.replace(' ', '')
 
             if building_number:
                 numbers.append(building_number)
 
             if numbers:
                 house_number = separator.join(numbers)
-                house_number_prefixes = (u'#', u'no.', u'no', u'nº')
+                house_number_prefixes = ('#', 'no.', 'no', 'nº')
                 if random.choice((True, False)) and not any((house_number.lower().startswith(p) for p in house_number_prefixes)):
-                    house_number = u' '.join([random.choice(house_number_prefixes), house_number])
+                    house_number = ' '.join([random.choice(house_number_prefixes), house_number])
 
         return house_number
 
@@ -247,7 +247,7 @@ class OpenAddressesFormatter(object):
         country_name = None
 
         if random.random() < cldr_country_prob:
-            localized, iso_3166, alpha2, alpha3 = values = range(4)
+            localized, iso_3166, alpha2, alpha3 = values = list(range(4))
             localized_prob = float(self.get_property('localized_name_probability', *configs))
             iso_3166_prob = float(self.get_property('iso_3166_name_probability', *configs))
             alpha2_prob = float(self.get_property('iso_alpha_2_code_probability', *configs))
@@ -342,7 +342,7 @@ class OpenAddressesFormatter(object):
 
         f = open(path)
         reader = unicode_csv_reader(f)
-        headers = reader.next()
+        headers = next(reader)
 
         header_indices = {i: field_map[k] for i, k in enumerate(headers) if k in field_map}
         latitude_index = headers.index('LAT')
@@ -383,7 +383,7 @@ class OpenAddressesFormatter(object):
                     value = self.cleanup_number(value)
 
                     if postcode_strip_non_digit_chars:
-                        value = six.u('').join((c for c in value if c.isdigit()))
+                        value = ''.join((c for c in value if c.isdigit()))
 
                     if value and not is_numeric(value) and numeric_postcodes_only:
                         continue
@@ -435,7 +435,7 @@ class OpenAddressesFormatter(object):
                     candidate_languages = get_country_languages(country)
                     if not candidate_languages:
                         continue
-                    candidate_languages = candidate_languages.items()
+                    candidate_languages = list(candidate_languages.items())
 
                 components = self.fix_component_encodings(components)
 
@@ -642,7 +642,7 @@ class OpenAddressesFormatter(object):
                 if not all_sources_valid and not ((country_dir, filename) in valid_sources or (country_dir,) in valid_sources):
                     continue
 
-                print(six.u('doing {}/{}').format(country_dir, filename))
+                print('doing {}/{}'.format(country_dir, filename))
 
                 path = os.path.join(base_dir, country_dir, filename)
                 configs = (file_config, country_config, openaddresses_config.config)
@@ -675,7 +675,7 @@ class OpenAddressesFormatter(object):
                     if not all_sources_valid and not ((country_dir, subdir, filename) in valid_sources or (country_dir, subdir) in valid_sources or (country_dir,) in valid_sources):
                         continue
 
-                    print(six.u('doing {}/{}/{}').format(country_dir, subdir, filename))
+                    print('doing {}/{}/{}'.format(country_dir, subdir, filename))
 
                     path = os.path.join(base_dir, country_dir, subdir, filename)
 

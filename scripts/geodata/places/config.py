@@ -43,7 +43,7 @@ class PlaceConfig(object):
 
     def __init__(self, config_file=PLACE_CONFIG_FILE):
         self.cache = {}
-        place_config = yaml.load(open(config_file))
+        place_config = yaml.load(open(config_file), Loader=yaml.FullLoader)
 
         self.global_config = place_config['global']
         self.country_configs = {}
@@ -198,7 +198,7 @@ class PlaceConfig(object):
                 if values is None:
                     values = self.get_property(('components', component, 'values'), country=country, default=None)
                     if values is not None:
-                        values, probs = zip(*[(v['value'], float(v['probability'])) for v in values])
+                        values, probs = list(zip(*[(v['value'], float(v['probability'])) for v in values]))
                         probs = cdf(probs)
                         self.cdf_cache[(country, component)] = (values, probs)
 
