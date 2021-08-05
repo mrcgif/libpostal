@@ -82,3 +82,77 @@ docs/_build/
 
 # PyBuilder
 target/
+
+# Build files (Generic)
+*.Po
+*.Plo
+src/.deps/
+src/.libs/
+test/.deps/
+src/utf8proc/.deps
+*.cache
+**/.dirstamp
+
+# Build Files (Specific)
+aclocal.m4
+compile
+config.guess
+config.h
+config.h.in
+config.h.in~
+config.status
+config.sub
+configure
+depcomp
+install-sh
+libpostal.pc
+libtool
+ltmain.sh
+Makefile
+Makefile.in
+missing
+stamp-h1
+test-driver
+m4/libtool.m4
+m4/lt~obsolete.m4
+m4/ltoptions.m4
+m4/ltsugar.m4
+m4/ltversion.m4
+src/address_parser
+src/address_parser_test
+src/address_parser_train
+src/bench
+src/build_address_dictionary
+src/build_numex_table
+src/build_trans_table
+src/language_classifier
+src/language_classifier_test
+src/language_classifier_train
+src/libpostal
+src/libpostal_data
+src/near_dupe_test
+test/test_libpostal
+test/.libs/test_libpostal
+
+# Training Files
+*.tsv
+*.csv
+*.zip
+*.o5m
+*.osm
+
+# VS Code
+.vscode/
+
+# 2to3
+*.py.bak
+
+# Training data
+**/data/
+**/resources/unicode
+
+# Address Parser specific files
+**.history
+
+# Performance analysis
+**.prof
